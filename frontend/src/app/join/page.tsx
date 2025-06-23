@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 
 interface FormData {
@@ -31,8 +31,13 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
     email: '',
     phone: '',
     dateOfBirth: '',
-    nidNumber: '',
+    bloodGroup: '',
+    idDocumentType: 'nid',
+    idDocumentNumber: '',
+    idDocumentPhoto: null,
+    holdingIdPhoto: null,
     address: '',
+    zone: '',
     emergencyContact: '',
     emergencyPhone: '',
     hasMotorbike: false,
@@ -46,6 +51,30 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [zones, setZones] = useState<{ id: string; name: string }[]>([]);
+
+  // Mock zones data - replace with API call
+  const mockZones = [
+    { id: '1', name: 'Dhaka North' },
+    { id: '2', name: 'Dhaka South' },
+    { id: '3', name: 'Chittagong' },
+    { id: '4', name: 'Sylhet' },
+    { id: '5', name: 'Rajshahi' },
+    { id: '6', name: 'Khulna' },
+    { id: '7', name: 'Barisal' },
+    { id: '8', name: 'Rangpur' },
+    { id: '9', name: 'Mymensingh' },
+    { id: '10', name: 'Comilla' },
+    { id: '11', name: 'Cox\'s Bazar' },
+    { id: '12', name: 'Gazipur' },
+  ];
+
+  // Load zones on component mount
+  React.useEffect(() => {
+    // TODO: Replace with actual API call
+    // fetchZones().then(setZones);
+    setZones(mockZones);
+  }, []);
 
   const calculateAge = (dateOfBirth: string): number => {
     const today = new Date();
@@ -59,7 +88,6 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
     
     return age;
   };
-
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
 
@@ -68,8 +96,12 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
     if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
-    if (!formData.nidNumber.trim()) newErrors.nidNumber = 'NID number is required';
+    if (!formData.bloodGroup) newErrors.bloodGroup = 'Blood group is required';
+    if (!formData.idDocumentNumber.trim()) newErrors.idDocumentNumber = 'ID document number is required';
+    if (!formData.idDocumentPhoto) newErrors.idDocumentPhoto = 'ID document photo is required';
+    if (!formData.holdingIdPhoto) newErrors.holdingIdPhoto = 'Photo holding ID is required';
     if (!formData.address.trim()) newErrors.address = 'Address is required';
+    if (!formData.zone) newErrors.zone = 'Zone is required';
     if (!formData.emergencyContact.trim()) newErrors.emergencyContact = 'Emergency contact is required';
     if (!formData.emergencyPhone.trim()) newErrors.emergencyPhone = 'Emergency phone is required';
 
@@ -93,10 +125,27 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
       }
     }
 
-    // NID validation (Bangladesh NID is 10, 13, or 17 digits)
-    const nidRegex = /^\d{10}$|^\d{13}$|^\d{17}$/;
-    if (formData.nidNumber && !nidRegex.test(formData.nidNumber)) {
-      newErrors.nidNumber = 'Please enter a valid Bangladesh NID number';
+    // ID Document validation based on type
+    if (formData.idDocumentNumber) {
+      if (formData.idDocumentType === 'nid') {
+        const nidRegex = /^\d{10}$|^\d{13}$|^\d{17}$/;
+        if (!nidRegex.test(formData.idDocumentNumber)) {
+          newErrors.idDocumentNumber = 'Please enter a valid Bangladesh NID number';
+        }
+      } else if (formData.idDocumentType === 'birth_certificate') {
+        const birthCertRegex = /^\d{17}$/;
+        if (!birthCertRegex.test(formData.idDocumentNumber)) {
+          newErrors.idDocumentNumber = 'Please enter a valid birth certificate number';
+        }
+      }
+    }
+
+    // File size validation (max 5MB)
+    if (formData.idDocumentPhoto && formData.idDocumentPhoto.size > 5 * 1024 * 1024) {
+      newErrors.idDocumentPhoto = 'ID document photo must be less than 5MB';
+    }
+    if (formData.holdingIdPhoto && formData.holdingIdPhoto.size > 5 * 1024 * 1024) {
+      newErrors.holdingIdPhoto = 'Photo holding ID must be less than 5MB';
     }
 
     // Checkbox validations
@@ -106,14 +155,14 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
+    const files = (e.target as HTMLInputElement).files;
 
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : type === 'file' ? (files ? files[0] : null) : value
     }));
 
     // Clear error when user starts typing
@@ -134,15 +183,19 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Success - redirect or show success message
-      alert('Application submitted successfully! We will contact you soon.');
-        // Reset form
+      alert('Application submitted successfully! We will contact you soon.');      // Reset form
       setFormData({
         fullName: '',
         email: '',
         phone: '',
         dateOfBirth: '',
-        nidNumber: '',
+        bloodGroup: '',
+        idDocumentType: 'nid',
+        idDocumentNumber: '',
+        idDocumentPhoto: null,
+        holdingIdPhoto: null,
         address: '',
+        zone: '',
         emergencyContact: '',
         emergencyPhone: '',
         hasMotorbike: false,
@@ -186,8 +239,7 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
 
         {/* Form */}
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Personal Information */}
+          <form onSubmit={handleSubmit} className="space-y-6">            {/* Personal Information */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-6 border-b border-purple-500/30 pb-2">
                 Personal Information
@@ -255,17 +307,45 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
 
                 <div>
                   <label className="block text-white font-medium mb-2">
-                    NID Number *
+                    Blood Group *
                   </label>
-                  <input
-                    type="text"
-                    name="nidNumber"
-                    value={formData.nidNumber}
+                  <select
+                    name="bloodGroup"
+                    value={formData.bloodGroup}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Bangladesh NID Number"
-                  />
-                  {errors.nidNumber && <p className="text-red-400 text-sm mt-1">{errors.nidNumber}</p>}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option value="">Select Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                  {errors.bloodGroup && <p className="text-red-400 text-sm mt-1">{errors.bloodGroup}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-white font-medium mb-2">
+                    Zone *
+                  </label>
+                  <select
+                    name="zone"
+                    value={formData.zone}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option value="">Select Zone</option>
+                    {zones.map((zone) => (
+                      <option key={zone.id} value={zone.id}>
+                        {zone.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.zone && <p className="text-red-400 text-sm mt-1">{errors.zone}</p>}
                 </div>
               </div>
 
@@ -282,6 +362,79 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                   placeholder="Your full address in Bangladesh"
                 />
                 {errors.address && <p className="text-red-400 text-sm mt-1">{errors.address}</p>}
+              </div>
+            </div>
+
+            {/* Identity Verification */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-white mb-6 border-b border-purple-500/30 pb-2">
+                Identity Verification
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-white font-medium mb-2">
+                    ID Document Type *
+                  </label>
+                  <select
+                    name="idDocumentType"
+                    value={formData.idDocumentType}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option value="nid">National ID (NID)</option>
+                    <option value="birth_certificate">Birth Certificate</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-white font-medium mb-2">
+                    {formData.idDocumentType === 'nid' ? 'NID Number *' : 'Birth Certificate Number *'}
+                  </label>
+                  <input
+                    type="text"
+                    name="idDocumentNumber"
+                    value={formData.idDocumentNumber}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder={
+                      formData.idDocumentType === 'nid' 
+                        ? 'Bangladesh NID Number' 
+                        : 'Birth Certificate Number'
+                    }
+                  />
+                  {errors.idDocumentNumber && <p className="text-red-400 text-sm mt-1">{errors.idDocumentNumber}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-white font-medium mb-2">
+                    Upload ID Document Photo *
+                  </label>
+                  <input
+                    type="file"
+                    name="idDocumentPhoto"
+                    onChange={handleInputChange}
+                    accept="image/*"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700"
+                  />
+                  <p className="text-gray-400 text-xs mt-1">Clear photo of your ID document (max 5MB)</p>
+                  {errors.idDocumentPhoto && <p className="text-red-400 text-sm mt-1">{errors.idDocumentPhoto}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-white font-medium mb-2">
+                    Upload Photo Holding ID *
+                  </label>
+                  <input
+                    type="file"
+                    name="holdingIdPhoto"
+                    onChange={handleInputChange}
+                    accept="image/*"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700"
+                  />
+                  <p className="text-gray-400 text-xs mt-1">Photo of you holding your ID document (max 5MB)</p>
+                  {errors.holdingIdPhoto && <p className="text-red-400 text-sm mt-1">{errors.holdingIdPhoto}</p>}
+                </div>
               </div>
             </div>
 
