@@ -12,6 +12,7 @@ interface FormData {
   dateOfBirth: string;
   bloodGroup: string;
   profession: string;
+  hobbies: string;
   idDocumentType: string;
   idDocumentNumber: string;
   idDocumentPhoto: File | null;
@@ -38,6 +39,7 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
     dateOfBirth: '',
     bloodGroup: '',
     profession: '',
+    hobbies: '',
     idDocumentType: 'nid',
     idDocumentNumber: '',
     idDocumentPhoto: null,
@@ -183,7 +185,7 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Success - redirect or show success message
-      alert('Application submitted successfully! We will contact you soon.');        // Reset form      
+      alert('Application submitted successfully! We will contact you soon.');      // Reset form      
       setFormData({
         profilePhoto: null,
         fullName: '',
@@ -193,6 +195,7 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
         dateOfBirth: '',
         bloodGroup: '',
         profession: '',
+        hobbies: '',
         idDocumentType: 'nid',
         idDocumentNumber: '',
         idDocumentPhoto: null,
@@ -352,9 +355,7 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                     <option value="O-" className="bg-white text-black">O-</option>
                   </select>
                   {errors.bloodGroup && <p className="text-red-400 text-sm mt-1">{errors.bloodGroup}</p>}
-                </div>
-
-                <div>
+                </div>                <div>
                   <label className="block text-white font-medium mb-2">
                     Profession *
                   </label>
@@ -367,6 +368,21 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                     placeholder="e.g., Software Engineer, Doctor, Student"
                   />
                   {errors.profession && <p className="text-red-400 text-sm mt-1">{errors.profession}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-white font-medium mb-2">
+                    Hobbies
+                  </label>
+                  <input
+                    type="text"
+                    name="hobbies"
+                    value={formData.hobbies}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="e.g., Photography, Reading, Traveling (Optional)"
+                  />
+                  {errors.hobbies && <p className="text-red-400 text-sm mt-1">{errors.hobbies}</p>}
                 </div>
 
                 <div>
