@@ -42,8 +42,10 @@ class MembershipApplication(models.Model):
         ('beginner', 'Beginner (0-1 years)'),
         ('intermediate', 'Intermediate (1-5 years)'),
         ('advanced', 'Advanced (5+ years)'),
-        ('expert', 'Expert (10+ years)'),
-    ]
+        ('expert', 'Expert (10+ years)'),    ]
+
+    # Link to user account
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
 
     # Personal Information
     profile_photo = models.ImageField(upload_to='applications/profile_photos/', null=True, blank=True)
@@ -91,11 +93,19 @@ class MembershipApplication(models.Model):
         ordering = ['-created_at']
 
 class Rider(models.Model):
+    MEMBERSHIP_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=100, blank=True)
     bike_model = models.CharField(max_length=100, blank=True)
     profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
+    membership_status = models.CharField(max_length=20, choices=MEMBERSHIP_STATUS_CHOICES, default='pending')
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

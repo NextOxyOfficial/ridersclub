@@ -71,9 +71,8 @@ export const apiService = {
     }
     return response.json();
   },
-
-  // Submit membership application with user creation
-  async submitMembershipApplication(data: MembershipApplicationData & { password: string }): Promise<any> {
+  // Submit membership application
+  async submitMembershipApplication(data: MembershipApplicationData): Promise<any> {
     console.log('API Service: Starting form submission...');
     console.log('API Service: Input data:', data);
     
@@ -101,9 +100,6 @@ export const apiService = {
     formData.append('riding_experience', data.ridingExperience);
     formData.append('citizenship_confirm', data.citizenshipConfirm.toString());
     formData.append('agree_terms', data.agreeTerms.toString());
-    
-    // Add password for user creation
-    formData.append('password', data.password);
     
     // Add file fields
     if (data.profilePhoto) {
@@ -146,7 +142,7 @@ export const apiService = {
       const responseData = await response.json();
       console.log('API Service: Success response data:', responseData);
       return responseData;
-    } catch (networkError) {
+        } catch (networkError) {
       console.error('API Service: Network error:', networkError);
       const errorMessage = networkError instanceof Error ? networkError.message : 'Unknown error occurred';
       

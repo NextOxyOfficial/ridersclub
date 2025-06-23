@@ -34,8 +34,7 @@ interface FormData {
   confirmPassword: string;
 }
 
-export default function JoinPage() {
-  const [formData, setFormData] = useState<FormData>({
+export default function JoinPage() {  const [formData, setFormData] = useState<FormData>({
     profilePhoto: null,
     fullName: '',
     email: '',
@@ -63,15 +62,12 @@ export default function JoinPage() {
     password: '',
     confirmPassword: '',
   });
-  
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [zones, setZones] = useState<Zone[]>([]);
   const [isLoadingZones, setIsLoadingZones] = useState(true);
   const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [zonesError, setZonesError] = useState<string | null>(null);
-
-  // Fetch zones from backend API
+  const [zonesError, setZonesError] = useState<string | null>(null);  // Fetch zones from backend API
   useEffect(() => {
     const fetchZones = async () => {
       try {
@@ -103,7 +99,6 @@ export default function JoinPage() {
 
     fetchZones();
   }, []);
-
   const retryLoadZones = () => {
     setIsLoadingZones(true);
     setZonesError(null);
@@ -123,8 +118,7 @@ export default function JoinPage() {
     fetchZones();
   };
 
-  // Calculate form completion percentage
-  const calculateProgress = (): number => {
+  // Calculate form completion percentage  const calculateProgress = (): number => {
     const requiredFields = [
       'profilePhoto', 'fullName', 'phone', 'dateOfBirth', 'bloodGroup', 
       'profession', 'idDocumentNumber', 'idDocumentPhoto', 'holdingIdPhoto',
@@ -152,8 +146,7 @@ export default function JoinPage() {
     const monthDiff = today.getMonth() - birthDate.getMonth();
     
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
+      age--;    }
     
     return age;
   };
@@ -176,17 +169,6 @@ export default function JoinPage() {
     if (!formData.emergencyContact.trim()) newErrors.emergencyContact = 'Emergency contact is required';
     if (!formData.emergencyPhone.trim()) newErrors.emergencyPhone = 'Emergency phone is required';
 
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters long';
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
@@ -205,17 +187,13 @@ export default function JoinPage() {
       if (age < 15) {
         newErrors.dateOfBirth = 'You must be at least 15 years old to join';
       }
-    }
-
-    // Basic ID Document validation (relaxed for testing)
+    }    // Basic ID Document validation (relaxed for testing)
     if (formData.idDocumentNumber) {
       // Just check that it's not empty and has some reasonable length
       if (formData.idDocumentNumber.trim().length < 5) {
         newErrors.idDocumentNumber = 'ID document number must be at least 5 characters';
       }
-    }
-
-    // File size validation (max 5MB)
+    }// File size validation (max 5MB)
     if (formData.profilePhoto && formData.profilePhoto.size > 5 * 1024 * 1024) {
       newErrors.profilePhoto = 'Profile photo must be less than 5MB';
     }
@@ -230,11 +208,20 @@ export default function JoinPage() {
     if (!formData.agreeTerms) newErrors.agreeTerms = 'You must agree to the terms and conditions';
     if (!formData.citizenshipConfirm) newErrors.citizenshipConfirm = 'You must confirm your Bangladesh citizenship';
 
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters long';
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  };  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
     const files = (e.target as HTMLInputElement).files;
@@ -275,22 +262,7 @@ export default function JoinPage() {
         setErrors(prev => ({ ...prev, dateOfBirth: 'You must be at least 15 years old to join' }));
       }
     }
-
-    // Password validation real-time
-    if (name === 'password' && value) {
-      if (value.length < 8) {
-        setErrors(prev => ({ ...prev, password: 'Password must be at least 8 characters long' }));
-      }
-    }
-
-    if (name === 'confirmPassword' && value) {
-      if (value !== formData.password) {
-        setErrors(prev => ({ ...prev, confirmPassword: 'Passwords do not match' }));
-      }
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  };  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     console.log('Form submission started...');
@@ -305,8 +277,8 @@ export default function JoinPage() {
     
     try {
       console.log('Converting form data...');
-      // Convert FormData to MembershipApplicationData (include password data)
-      const applicationData: MembershipApplicationData & { password: string } = {
+      // Convert FormData to MembershipApplicationData
+      const applicationData: MembershipApplicationData = {
         profilePhoto: formData.profilePhoto,
         fullName: formData.fullName,
         email: formData.email,
@@ -331,7 +303,6 @@ export default function JoinPage() {
         ridingExperience: formData.ridingExperience,
         agreeTerms: formData.agreeTerms,
         citizenshipConfirm: formData.citizenshipConfirm,
-        password: formData.password,
       };
 
       console.log('Application data prepared:', applicationData);
@@ -349,8 +320,7 @@ export default function JoinPage() {
       });
       
       // Reset form after a short delay
-      setTimeout(() => {
-        setFormData({
+      setTimeout(() => {        setFormData({
           profilePhoto: null,
           fullName: '',
           email: '',
@@ -404,33 +374,23 @@ export default function JoinPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="flex justify-between items-center mb-6">
-            <Link 
-              href="/" 
-              className="inline-flex items-center text-purple-300 hover:text-white transition-colors"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to Home
-            </Link>
-            
-            <Link 
-              href="/login" 
-              className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              Login
-            </Link>
-          </div>
+          <Link 
+            href="/" 
+            className="inline-flex items-center text-purple-300 hover:text-white mb-6 transition-colors"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Home
+          </Link>
           
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
             Join Riders Club Bangladesh
           </h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Fill out the application form below to become a member of our motorcycle community and create your account
+            Fill out the application form below to become a member of our motorcycle community
           </p>
         </div>        
-        
         {/* Form */}
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20">
           {/* Sticky Progress Bar */}
@@ -447,14 +407,12 @@ export default function JoinPage() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Personal Information */}
+          <form onSubmit={handleSubmit} className="space-y-6">{/* Personal Information */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-6 border-b border-purple-500/30 pb-2">
                 Personal Information
               </h2>
-              
-              {/* Profile Photo Upload */}
+                {/* Profile Photo Upload */}
               <div className="mb-6">
                 <label className="block text-white font-medium mb-2">
                   Upload Your Photo *
@@ -484,9 +442,7 @@ export default function JoinPage() {
                     placeholder="Enter your full name"
                   />
                   {errors.fullName && <p className="text-red-400 text-sm mt-1">{errors.fullName}</p>}
-                </div>
-                
-                <div>
+                </div>                <div>
                   <label className="block text-white font-medium mb-2">
                     Email Address
                   </label>
@@ -499,9 +455,7 @@ export default function JoinPage() {
                     placeholder="your.email@example.com (Optional)"
                   />
                   {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
-                </div>
-
-                <div>
+                </div><div>
                   <label className="block text-white font-medium mb-2">
                     Phone Number * 
                   </label>
@@ -542,9 +496,7 @@ export default function JoinPage() {
                     className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                   {errors.dateOfBirth && <p className="text-red-400 text-sm mt-1">{errors.dateOfBirth}</p>}
-                </div>
-                
-                <div>
+                </div>                <div>
                   <label className="block text-white font-medium mb-2">
                     Blood Group *
                   </label>
@@ -565,9 +517,7 @@ export default function JoinPage() {
                     <option value="O-" className="bg-white text-black">O-</option>
                   </select>
                   {errors.bloodGroup && <p className="text-red-400 text-sm mt-1">{errors.bloodGroup}</p>}
-                </div>
-                
-                <div>
+                </div>                <div>
                   <label className="block text-white font-medium mb-2">
                     Profession *
                   </label>
@@ -595,9 +545,7 @@ export default function JoinPage() {
                     placeholder="e.g., Photography, Reading, Traveling (Optional)"
                   />
                   {errors.hobbies && <p className="text-red-400 text-sm mt-1">{errors.hobbies}</p>}
-                </div>
-                
-                <div>
+                </div>                <div>
                   <label className="block text-white font-medium mb-2">
                     Zone *
                   </label>
@@ -646,8 +594,7 @@ export default function JoinPage() {
                   className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Your full address in Bangladesh"
                 />
-                {errors.address && <p className="text-red-400 text-sm mt-1">{errors.address}</p>}
-              </div>
+                {errors.address && <p className="text-red-400 text-sm mt-1">{errors.address}</p>}              </div>
             </div>
 
             {/* Account Creation */}
@@ -700,8 +647,7 @@ export default function JoinPage() {
                 <div>
                   <label className="block text-white font-medium mb-2">
                     ID Document Type *
-                  </label>
-                  <select
+                  </label>                  <select
                     name="idDocumentType"
                     value={formData.idDocumentType}
                     onChange={handleInputChange}
@@ -711,9 +657,7 @@ export default function JoinPage() {
                     <option value="birth_certificate" className="bg-white text-black">Birth Certificate</option>
                     <option value="passport" className="bg-white text-black">Passport</option>
                   </select>
-                </div>
-                
-                <div>
+                </div>                <div>
                   <label className="block text-white font-medium mb-2">
                     {formData.idDocumentType === 'nid' ? 'NID Number *' : 
                      formData.idDocumentType === 'birth_certificate' ? 'Birth Certificate Number *' : 
@@ -804,8 +748,7 @@ export default function JoinPage() {
                   />
                   {errors.emergencyPhone && <p className="text-red-400 text-sm mt-1">{errors.emergencyPhone}</p>}
                 </div>
-              </div>
-            </div>
+              </div>            </div>
 
             {/* Motorcycle Information */}
             <div className="mb-8">
@@ -882,8 +825,7 @@ export default function JoinPage() {
                   <div className="mt-6">
                     <label className="block text-white font-medium mb-2">
                       Riding Experience
-                    </label>
-                    <select
+                    </label>                    <select
                       name="ridingExperience"
                       value={formData.ridingExperience}
                       onChange={handleInputChange}
@@ -936,9 +878,7 @@ export default function JoinPage() {
                 </div>
                 {errors.agreeTerms && <p className="text-red-400 text-sm">{errors.agreeTerms}</p>}
               </div>
-            </div>
-
-            {/* Submit Button */}
+            </div>            {/* Submit Button */}
             <div className="text-center">
               {/* Success/Error Message */}
               {submitMessage && (
@@ -973,7 +913,7 @@ export default function JoinPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Creating Account & Submitting Application...
+                    Submitting Application...
                   </div>
                 ) : (
                   'Submit Application'
@@ -983,6 +923,5 @@ export default function JoinPage() {
           </form>
         </div>
       </div>
-    </div>
-  );
+    </div>  );
 }
