@@ -91,7 +91,7 @@ export default function Home() {
               </div>
             </a>
           </div></div>        {/* App Download Section */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20 mx-2 sm:mx-4">
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-white mb-2">
               Get the Mobile App
@@ -166,15 +166,60 @@ export default function Home() {
               <h3 className="text-white font-semibold mb-1">Share</h3>
               <p className="text-gray-400 text-sm">Share your adventures and tips</p>
             </div>
-          </div>        </div>
-
-        {/* Coming Soon Badge */}
+          </div>        </div>        {/* Coming Soon Badge */}
         <div className="mt-8">
           <span className="bg-purple-600/20 text-purple-300 px-4 py-2 rounded-full text-sm font-medium border border-purple-500/30">
             🚀 Coming Soon to App Stores
           </span>
         </div>
       </div>
+
+      {/* Footer - Terms and Conditions */}
+      <footer className="bg-slate-900/50 backdrop-blur-lg border-t border-white/10 py-8 px-4">
+        <div className="max-w-6xl mx-auto">          {/* Terms and Conditions Links */}
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6">
+            <a href="#" className="text-gray-300 hover:text-purple-400 text-sm transition-colors">
+              Terms & Conditions
+            </a>
+            <a href="#" className="text-gray-300 hover:text-purple-400 text-sm transition-colors">
+              Community Guidelines
+            </a>
+            <a href="#" className="text-gray-300 hover:text-purple-400 text-sm transition-colors">
+              Support
+            </a>
+          </div>
+
+          {/* Divider */}
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-6"></div>
+
+          {/* Copyright and Rights */}
+          <div className="text-center space-y-3">
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-2 text-sm text-gray-400">
+              <span>© {new Date().getFullYear()} Rider's Club Bangladesh.</span>
+              <span className="hidden sm:block">•</span>
+              <span>All rights reserved.</span>
+            </div>
+            
+            <div className="text-xs text-gray-500 max-w-2xl mx-auto">
+              <p className="mb-2">
+                By using this service, you agree to our Terms of Service and Privacy Policy. 
+                Rider's Club Bangladesh is a registered trademark of Lyricz Motors.
+              </p>
+              <p>
+                All content, logos, and designs are protected by copyright and other intellectual property laws. 
+                Unauthorized reproduction or distribution is strictly prohibited.
+              </p>
+            </div>
+
+            {/* Company Attribution */}
+            <div className="pt-4 border-t border-white/5">
+              <p className="text-xs text-gray-500">
+                Developed and maintained by <span className="text-purple-400 font-medium">Lyricz Motors</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
