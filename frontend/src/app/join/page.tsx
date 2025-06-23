@@ -371,15 +371,16 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Fill out the application form below to become a member of our motorcycle community
           </p>
-        </div>        {/* Form */}
+        </div>        
+        {/* Form */}
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20">
           {/* Sticky Progress Bar */}
-          <div className="sticky top-4 z-10 mb-8 bg-white/10 backdrop-blur-lg rounded-lg p-4 border border-white/20">
+          <div className="sticky top-4 z-10 mb-8 bg-slate-800 rounded-lg p-4 border border-purple-500/30 shadow-lg">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-white">Form Progress</span>
               <span className="text-sm font-medium text-white">{calculateProgress()}%</span>
             </div>
-            <div className="w-full bg-white/10 rounded-full h-2">
+            <div className="w-full bg-slate-700 rounded-full h-2">
               <div 
                 className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${calculateProgress()}%` }}
