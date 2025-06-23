@@ -106,3 +106,48 @@ def user_profile_view(request):
             'name': zone.name
         } if zone else None
     })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password_view(request):
+    """
+    Change user password
+    """
+    current_password = request.data.get('current_password')
+    new_password = request.data.get('new_password')
+    confirm_password = request.data.get('confirm_password')
+    
+    if not current_password or not new_password or not confirm_password:
+        return Response(
+            {'detail': 'Current password, new password, and confirmation are required'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    if new_password != confirm_password:
+        return Response(
+            {'detail': 'New passwords do not match'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    if len(new_password) < 6:
+        return Response(
+            {'detail': 'Password must be at least 6 characters long'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    user = request.user
+    
+    # Verify current password
+    if not user.check_password(current_password):
+        return Response(
+            {'detail': 'Current password is incorrect'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Set new password
+    user.set_password(new_password)
+    user.save()
+    
+    return Response({
+        'detail': 'Password changed successfully'
+    })

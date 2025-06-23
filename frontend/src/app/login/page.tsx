@@ -26,7 +26,6 @@ export default function LoginPage() {
       setError('');
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -38,7 +37,16 @@ export default function LoginPage() {
     setIsLoading(true);
     
     try {
-      const response = await apiService.login(credentials);
+      // Try to format phone number - add +880 if it starts with 01
+      let formattedPhone = credentials.phone.trim();
+      if (formattedPhone.startsWith('01') && formattedPhone.length === 11) {
+        formattedPhone = '+880' + formattedPhone.substring(1);
+      }
+      
+      const response = await apiService.login({
+        phone: formattedPhone,
+        password: credentials.password
+      });
       
       // Store tokens
       localStorage.setItem('access_token', response.access);
@@ -68,13 +76,16 @@ export default function LoginPage() {
             </svg>
             Back to Home
           </Link>
-          
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Login to Riders Club
-          </h1>
-          <p className="text-lg text-gray-300">
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Login to Rider's Club
+          </h1>          <p className="text-lg text-gray-300">
             Welcome back! Sign in to your account
           </p>
+          <div className="mt-4 text-sm text-purple-300">
+            <p>Test credentials:</p>
+            <p>Phone: +8801957045438</p>
+            <p>Password: 123456</p>
+          </div>
         </div>
 
         {/* Login Form */}

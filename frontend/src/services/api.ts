@@ -62,6 +62,12 @@ export interface UserProfile {
   };
 }
 
+export interface ChangePasswordData {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
 export const apiService = {
   // Fetch zones
   async fetchZones(): Promise<Zone[]> {
@@ -193,7 +199,6 @@ export const apiService = {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
   },
-
   async getCurrentUser(): Promise<UserProfile> {
     const token = localStorage.getItem('access_token');
     const response = await fetch(`${API_BASE_URL}/auth/user/`, {
@@ -207,6 +212,23 @@ export const apiService = {
     }
 
     return response.json();
+  },
+
+  async changePassword(data: ChangePasswordData): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_BASE_URL}/auth/change-password/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to change password');
+    }
   },
 
   // Check if user is authenticated
