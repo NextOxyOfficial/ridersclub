@@ -4,11 +4,14 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 
 interface FormData {
+  profilePhoto: File | null;
   fullName: string;
   email: string;
   phone: string;
+  alternativePhone: string;
   dateOfBirth: string;
   bloodGroup: string;
+  profession: string;
   idDocumentType: string;
   idDocumentNumber: string;
   idDocumentPhoto: File | null;
@@ -27,11 +30,14 @@ interface FormData {
 }
 
 export default function JoinPage() {  const [formData, setFormData] = useState<FormData>({
+    profilePhoto: null,
     fullName: '',
     email: '',
     phone: '',
+    alternativePhone: '',
     dateOfBirth: '',
     bloodGroup: '',
+    profession: '',
     idDocumentType: 'nid',
     idDocumentNumber: '',
     idDocumentPhoto: null,
@@ -87,16 +93,17 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
     }
     
     return age;
-  };
-  const validateForm = (): boolean => {
+  };  const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
 
     // Required fields validation
+    if (!formData.profilePhoto) newErrors.profilePhoto = 'Profile photo is required';
     if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
     if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
     if (!formData.bloodGroup) newErrors.bloodGroup = 'Blood group is required';
+    if (!formData.profession.trim()) newErrors.profession = 'Profession is required';
     if (!formData.idDocumentNumber.trim()) newErrors.idDocumentNumber = 'ID document number is required';
     if (!formData.idDocumentPhoto) newErrors.idDocumentPhoto = 'ID document photo is required';
     if (!formData.holdingIdPhoto) newErrors.holdingIdPhoto = 'Photo holding ID is required';
@@ -138,9 +145,10 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
           newErrors.idDocumentNumber = 'Please enter a valid birth certificate number';
         }
       }
+    }    // File size validation (max 5MB)
+    if (formData.profilePhoto && formData.profilePhoto.size > 5 * 1024 * 1024) {
+      newErrors.profilePhoto = 'Profile photo must be less than 5MB';
     }
-
-    // File size validation (max 5MB)
     if (formData.idDocumentPhoto && formData.idDocumentPhoto.size > 5 * 1024 * 1024) {
       newErrors.idDocumentPhoto = 'ID document photo must be less than 5MB';
     }
@@ -183,13 +191,16 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Success - redirect or show success message
-      alert('Application submitted successfully! We will contact you soon.');      // Reset form
+      alert('Application submitted successfully! We will contact you soon.');        // Reset form      
       setFormData({
+        profilePhoto: null,
         fullName: '',
         email: '',
         phone: '',
+        alternativePhone: '',
         dateOfBirth: '',
         bloodGroup: '',
+        profession: '',
         idDocumentType: 'nid',
         idDocumentNumber: '',
         idDocumentPhoto: null,
@@ -244,6 +255,21 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
               <h2 className="text-2xl font-bold text-white mb-6 border-b border-purple-500/30 pb-2">
                 Personal Information
               </h2>
+                {/* Profile Photo Upload */}
+              <div className="mb-6">
+                <label className="block text-white font-medium mb-2">
+                  Upload Your Photo *
+                </label>
+                <input
+                  type="file"
+                  name="profilePhoto"
+                  onChange={handleInputChange}
+                  accept="image/*"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+                <p className="text-gray-400 text-sm mt-1">Maximum file size: 5MB. Accepted formats: JPG, PNG, JPEG</p>
+                {errors.profilePhoto && <p className="text-red-400 text-sm mt-1">{errors.profilePhoto}</p>}
+              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -274,9 +300,7 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                     placeholder="your.email@example.com"
                   />
                   {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
-                </div>
-
-                <div>
+                </div>                <div>
                   <label className="block text-white font-medium mb-2">
                     Phone Number * 
                   </label>
@@ -293,6 +317,20 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
 
                 <div>
                   <label className="block text-white font-medium mb-2">
+                    Alternative Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="alternativePhone"
+                    value={formData.alternativePhone}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="01XXXXXXXXX or +8801XXXXXXXXX (Optional)"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-medium mb-2">
                     Date of Birth * (Must be 15+ years old)
                   </label>
                   <input
@@ -303,9 +341,7 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                     className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                   {errors.dateOfBirth && <p className="text-red-400 text-sm mt-1">{errors.dateOfBirth}</p>}
-                </div>
-
-                <div>
+                </div>                <div>
                   <label className="block text-white font-medium mb-2">
                     Blood Group *
                   </label>
@@ -326,6 +362,21 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                     <option value="O-">O-</option>
                   </select>
                   {errors.bloodGroup && <p className="text-red-400 text-sm mt-1">{errors.bloodGroup}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-white font-medium mb-2">
+                    Profession *
+                  </label>
+                  <input
+                    type="text"
+                    name="profession"
+                    value={formData.profession}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="e.g., Software Engineer, Doctor, Student"
+                  />
+                  {errors.profession && <p className="text-red-400 text-sm mt-1">{errors.profession}</p>}
                 </div>
 
                 <div>
