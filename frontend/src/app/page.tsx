@@ -1,8 +1,33 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Navigation */}
+      <nav className="absolute top-0 left-0 right-0 z-10 p-6">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <div className="text-white font-bold text-xl">
+            Riders Club Bangladesh
+          </div>
+          <div className="space-x-4">
+            <Link
+              href="/join"
+              className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+            >
+              Join Club
+            </Link>
+            <Link
+              href="/login"
+              className="bg-transparent border border-white/30 hover:bg-white/10 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+            >
+              Login
+            </Link>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
-      <div className="flex flex-col pt-4 pb-10 items-center justify-center min-h-screen px-4">        <div className="text-center mb-8">
+      <div className="flex flex-col pt-20 pb-10 items-center justify-center min-h-screen px-4"><div className="text-center mb-8">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-4">
             Riders Club Bangladesh
           </h1>
