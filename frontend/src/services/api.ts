@@ -43,9 +43,11 @@ export const apiService = {
     }
     return response.json();
   },
-
   // Submit membership application
   async submitMembershipApplication(data: MembershipApplicationData): Promise<any> {
+    console.log('API Service: Starting form submission...');
+    console.log('API Service: Input data:', data);
+    
     const formData = new FormData();
     
     // Add text fields
@@ -74,24 +76,52 @@ export const apiService = {
     // Add file fields
     if (data.profilePhoto) {
       formData.append('profile_photo', data.profilePhoto);
+      console.log('API Service: Profile photo added:', data.profilePhoto.name);
     }
     if (data.idDocumentPhoto) {
       formData.append('id_document_photo', data.idDocumentPhoto);
+      console.log('API Service: ID document photo added:', data.idDocumentPhoto.name);
     }
     if (data.holdingIdPhoto) {
       formData.append('holding_id_photo', data.holdingIdPhoto);
+      console.log('API Service: Holding ID photo added:', data.holdingIdPhoto.name);
     }
 
-    const response = await fetch(`${API_BASE_URL}/membership-applications/`, {
-      method: 'POST',
-      body: formData,
-    });
+    console.log('API Service: FormData prepared, making request to:', `${API_BASE_URL}/membership-applications/`);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to submit application');
+    try {
+      const response = await fetch(`${API_BASE_URL}/membership-applications/`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      console.log('API Service: Response status:', response.status);
+      console.log('API Service: Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log('API Service: Error response text:', errorText);
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          console.log('API Service: Parsed error data:', errorData);
+          throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        } catch (parseError) {
+          throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+        }
+      }
+
+      const responseData = await response.json();
+      console.log('API Service: Success response data:', responseData);
+      return responseData;
+        } catch (networkError) {
+      console.error('API Service: Network error:', networkError);
+      const errorMessage = networkError instanceof Error ? networkError.message : 'Unknown error occurred';
+      
+      if (errorMessage.includes('fetch') || errorMessage.includes('Failed to fetch')) {
+        throw new Error('Cannot connect to server. Please make sure the backend is running on http://localhost:8000');
+      }
+      throw new Error(errorMessage);
     }
-
-    return response.json();
   },
 };

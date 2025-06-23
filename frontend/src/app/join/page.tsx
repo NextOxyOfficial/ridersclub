@@ -256,15 +256,21 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
         setErrors(prev => ({ ...prev, dateOfBirth: 'You must be at least 15 years old to join' }));
       }
     }
-  };
-  const handleSubmit = async (e: React.FormEvent) => {
+  };  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    console.log('Form submission started...');
+    console.log('Form data:', formData);
+    
+    if (!validateForm()) {
+      console.log('Form validation failed');
+      return;
+    }
 
     setIsSubmitting(true);
     
     try {
+      console.log('Converting form data...');
       // Convert FormData to MembershipApplicationData
       const applicationData: MembershipApplicationData = {
         profilePhoto: formData.profilePhoto,
@@ -291,8 +297,15 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
         ridingExperience: formData.ridingExperience,
         agreeTerms: formData.agreeTerms,
         citizenshipConfirm: formData.citizenshipConfirm,
-      };      // Submit to backend API
+      };
+
+      console.log('Application data prepared:', applicationData);
+      console.log('Submitting to backend API...');
+
+      // Submit to backend API
       const response = await apiService.submitMembershipApplication(applicationData);
+      
+      console.log('API response received:', response);
       
       // Success - show success message
       setSubmitMessage({
@@ -337,11 +350,14 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
     } catch (error) {
       console.error('Submission error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+      console.log('Error message:', errorMessage);
+      
       setSubmitMessage({
         type: 'error',
         message: errorMessage
       });
     } finally {
+      console.log('Form submission completed');
       setIsSubmitting(false);
     }
   };
