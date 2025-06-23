@@ -3,8 +3,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from django.contrib.auth.models import User
-from .models import Rider, RideEvent, Post
-from .serializers import RiderSerializer, RideEventSerializer, PostSerializer
+from .models import Rider, RideEvent, Post, Zone
+from .serializers import RiderSerializer, RideEventSerializer, PostSerializer, ZoneSerializer
+
+class ZoneViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Zone.objects.filter(is_active=True)
+    serializer_class = ZoneSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 class RiderViewSet(viewsets.ModelViewSet):
     queryset = Rider.objects.all()

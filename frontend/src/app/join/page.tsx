@@ -1,7 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+
+interface Zone {
+  id: number;
+  name: string;
+  description: string;
+  is_active: boolean;
+}
 
 interface FormData {
   profilePhoto: File | null;
@@ -58,23 +65,59 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [isLoadingZones, setIsLoadingZones] = useState(true);
 
-  // Mock zones data - replace with API call
-  // Initialize directly to avoid hydration mismatch
-  const zones = [
-    { id: '1', name: 'Dhaka North' },
-    { id: '2', name: 'Dhaka South' },
-    { id: '3', name: 'Chittagong' },
-    { id: '4', name: 'Sylhet' },
-    { id: '5', name: 'Rajshahi' },
-    { id: '6', name: 'Khulna' },
-    { id: '7', name: 'Barisal' },
-    { id: '8', name: 'Rangpur' },
-    { id: '9', name: 'Mymensingh' },
-    { id: '10', name: 'Comilla' },
-    { id: '11', name: 'Cox\'s Bazar' },
-    { id: '12', name: 'Gazipur' },
-  ];
+  // Fetch zones from backend API
+  useEffect(() => {
+    const fetchZones = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/zones/');
+        if (response.ok) {
+          const data = await response.json();
+          setZones(data);
+        } else {
+          console.error('Failed to fetch zones');
+          // Fallback to mock data if API fails
+          setZones([
+            { id: 1, name: 'Dhaka North', description: '', is_active: true },
+            { id: 2, name: 'Dhaka South', description: '', is_active: true },
+            { id: 3, name: 'Chittagong', description: '', is_active: true },
+            { id: 4, name: 'Sylhet', description: '', is_active: true },
+            { id: 5, name: 'Rajshahi', description: '', is_active: true },
+            { id: 6, name: 'Khulna', description: '', is_active: true },
+            { id: 7, name: 'Barisal', description: '', is_active: true },
+            { id: 8, name: 'Rangpur', description: '', is_active: true },
+            { id: 9, name: 'Mymensingh', description: '', is_active: true },
+            { id: 10, name: 'Comilla', description: '', is_active: true },
+            { id: 11, name: "Cox's Bazar", description: '', is_active: true },
+            { id: 12, name: 'Gazipur', description: '', is_active: true },
+          ]);
+        }
+      } catch (error) {
+        console.error('Error fetching zones:', error);
+        // Fallback to mock data if API fails
+        setZones([
+          { id: 1, name: 'Dhaka North', description: '', is_active: true },
+          { id: 2, name: 'Dhaka South', description: '', is_active: true },
+          { id: 3, name: 'Chittagong', description: '', is_active: true },
+          { id: 4, name: 'Sylhet', description: '', is_active: true },
+          { id: 5, name: 'Rajshahi', description: '', is_active: true },
+          { id: 6, name: 'Khulna', description: '', is_active: true },
+          { id: 7, name: 'Barisal', description: '', is_active: true },
+          { id: 8, name: 'Rangpur', description: '', is_active: true },
+          { id: 9, name: 'Mymensingh', description: '', is_active: true },
+          { id: 10, name: 'Comilla', description: '', is_active: true },
+          { id: 11, name: "Cox's Bazar", description: '', is_active: true },
+          { id: 12, name: 'Gazipur', description: '', is_active: true },
+        ]);
+      } finally {
+        setIsLoadingZones(false);
+      }
+    };
+
+    fetchZones();
+  }, []);
 
   const calculateAge = (dateOfBirth: string): number => {
     const today = new Date();
@@ -383,18 +426,20 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                     placeholder="e.g., Photography, Reading, Traveling (Optional)"
                   />
                   {errors.hobbies && <p className="text-red-400 text-sm mt-1">{errors.hobbies}</p>}
-                </div>
-
-                <div>
+                </div>                <div>
                   <label className="block text-white font-medium mb-2">
                     Zone *
-                  </label>                  <select
+                  </label>
+                  <select
                     name="zone"
                     value={formData.zone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    disabled={isLoadingZones}
+                    className="w-full px-4 py-3 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <option value="" className="bg-white text-black">Select Zone</option>
+                    <option value="" className="bg-white text-black">
+                      {isLoadingZones ? 'Loading zones...' : 'Select Zone'}
+                    </option>
                     {zones.map((zone) => (
                       <option key={zone.id} value={zone.id} className="bg-white text-black">
                         {zone.name}

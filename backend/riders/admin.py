@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import Rider, RideEvent, Post
+from .models import Rider, RideEvent, Post, Zone
+
+@admin.register(Zone)
+class ZoneAdmin(admin.ModelAdmin):
+    list_display = ['name', 'is_active', 'created_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['name', 'description']
+    list_editable = ['is_active']
+    ordering = ['name']
 
 @admin.register(Rider)
 class RiderAdmin(admin.ModelAdmin):

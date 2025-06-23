@@ -1,6 +1,11 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Rider, RideEvent, Post
+from .models import Rider, RideEvent, Post, Zone
+
+class ZoneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Zone
+        fields = ['id', 'name', 'description', 'is_active', 'created_at', 'updated_at']
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
