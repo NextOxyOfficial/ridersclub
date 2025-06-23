@@ -341,17 +341,17 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                     name="bloodGroup"
                     value={formData.bloodGroup}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
-                    <option value="">Select Blood Group</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
+                    <option value="" className="bg-white text-black">Select Blood Group</option>
+                    <option value="A+" className="bg-white text-black">A+</option>
+                    <option value="A-" className="bg-white text-black">A-</option>
+                    <option value="B+" className="bg-white text-black">B+</option>
+                    <option value="B-" className="bg-white text-black">B-</option>
+                    <option value="AB+" className="bg-white text-black">AB+</option>
+                    <option value="AB-" className="bg-white text-black">AB-</option>
+                    <option value="O+" className="bg-white text-black">O+</option>
+                    <option value="O-" className="bg-white text-black">O-</option>
                   </select>
                   {errors.bloodGroup && <p className="text-red-400 text-sm mt-1">{errors.bloodGroup}</p>}
                 </div>
@@ -374,16 +374,15 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                 <div>
                   <label className="block text-white font-medium mb-2">
                     Zone *
-                  </label>
-                  <select
+                  </label>                  <select
                     name="zone"
                     value={formData.zone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
-                    <option value="">Select Zone</option>
+                    <option value="" className="bg-white text-black">Select Zone</option>
                     {zones.map((zone) => (
-                      <option key={zone.id} value={zone.id}>
+                      <option key={zone.id} value={zone.id} className="bg-white text-black">
                         {zone.name}
                       </option>
                     ))}
@@ -418,15 +417,14 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                 <div>
                   <label className="block text-white font-medium mb-2">
                     ID Document Type *
-                  </label>
-                  <select
+                  </label>                  <select
                     name="idDocumentType"
                     value={formData.idDocumentType}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
-                    <option value="nid">National ID (NID)</option>
-                    <option value="birth_certificate">Birth Certificate</option>
+                    <option value="nid" className="bg-white text-black">National ID (NID)</option>
+                    <option value="birth_certificate" className="bg-white text-black">Birth Certificate</option>
                   </select>
                 </div>
 
@@ -594,17 +592,16 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                   <div className="mt-6">
                     <label className="block text-white font-medium mb-2">
                       Riding Experience
-                    </label>
-                    <select
+                    </label>                    <select
                       name="ridingExperience"
                       value={formData.ridingExperience}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     >
-                      <option value="beginner">Beginner (0-1 years)</option>
-                      <option value="intermediate">Intermediate (1-5 years)</option>
-                      <option value="advanced">Advanced (5+ years)</option>
-                      <option value="expert">Expert (10+ years)</option>
+                      <option value="beginner" className="bg-white text-black">Beginner (0-1 years)</option>
+                      <option value="intermediate" className="bg-white text-black">Intermediate (1-5 years)</option>
+                      <option value="advanced" className="bg-white text-black">Advanced (5+ years)</option>
+                      <option value="expert" className="bg-white text-black">Expert (10+ years)</option>
                     </select>
                   </div>
                 </>
