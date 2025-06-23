@@ -4,6 +4,7 @@ from . import views
 
 router = DefaultRouter()
 router.register(r'zones', views.ZoneViewSet)
+router.register(r'membership-applications', views.MembershipApplicationViewSet)
 router.register(r'riders', views.RiderViewSet)
 router.register(r'events', views.RideEventViewSet)
 router.register(r'posts', views.PostViewSet)

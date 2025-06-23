@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Rider, RideEvent, Post, Zone
+from .models import Rider, RideEvent, Post, Zone, MembershipApplication
 
 @admin.register(Zone)
 class ZoneAdmin(admin.ModelAdmin):
@@ -8,6 +8,33 @@ class ZoneAdmin(admin.ModelAdmin):
     search_fields = ['name', 'description']
     list_editable = ['is_active']
     ordering = ['name']
+
+@admin.register(MembershipApplication)
+class MembershipApplicationAdmin(admin.ModelAdmin):
+    list_display = ['full_name', 'email', 'phone', 'zone', 'status', 'has_motorbike', 'created_at']
+    list_filter = ['status', 'zone', 'has_motorbike', 'blood_group', 'id_document_type', 'created_at']
+    search_fields = ['full_name', 'email', 'phone', 'id_document_number']
+    list_editable = ['status']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Personal Information', {
+            'fields': ('profile_photo', 'full_name', 'email', 'phone', 'alternative_phone', 
+                      'date_of_birth', 'blood_group', 'profession', 'hobbies', 'address', 'zone')
+        }),
+        ('Identity Verification', {
+            'fields': ('id_document_type', 'id_document_number', 'id_document_photo', 'holding_id_photo')
+        }),
+        ('Emergency Contact', {
+            'fields': ('emergency_contact', 'emergency_phone')
+        }),
+        ('Motorcycle Information', {
+            'fields': ('has_motorbike', 'motorcycle_brand', 'motorcycle_model', 'motorcycle_year', 'riding_experience')
+        }),
+        ('Application Status', {
+            'fields': ('citizenship_confirm', 'agree_terms', 'status', 'created_at', 'updated_at')
+        }),
+    )
 
 @admin.register(Rider)
 class RiderAdmin(admin.ModelAdmin):

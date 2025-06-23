@@ -2,13 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-interface Zone {
-  id: number;
-  name: string;
-  description: string;
-  is_active: boolean;
-}
+import { apiService, Zone, MembershipApplicationData } from '../../services/api';
 
 interface FormData {
   profilePhoto: File | null;
@@ -67,35 +61,17 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [zones, setZones] = useState<Zone[]>([]);
   const [isLoadingZones, setIsLoadingZones] = useState(true);
-
-  // Fetch zones from backend API
+  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [zonesError, setZonesError] = useState<string | null>(null);  // Fetch zones from backend API
   useEffect(() => {
     const fetchZones = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/zones/');
-        if (response.ok) {
-          const data = await response.json();
-          setZones(data);
-        } else {
-          console.error('Failed to fetch zones');
-          // Fallback to mock data if API fails
-          setZones([
-            { id: 1, name: 'Dhaka North', description: '', is_active: true },
-            { id: 2, name: 'Dhaka South', description: '', is_active: true },
-            { id: 3, name: 'Chittagong', description: '', is_active: true },
-            { id: 4, name: 'Sylhet', description: '', is_active: true },
-            { id: 5, name: 'Rajshahi', description: '', is_active: true },
-            { id: 6, name: 'Khulna', description: '', is_active: true },
-            { id: 7, name: 'Barisal', description: '', is_active: true },
-            { id: 8, name: 'Rangpur', description: '', is_active: true },
-            { id: 9, name: 'Mymensingh', description: '', is_active: true },
-            { id: 10, name: 'Comilla', description: '', is_active: true },
-            { id: 11, name: "Cox's Bazar", description: '', is_active: true },
-            { id: 12, name: 'Gazipur', description: '', is_active: true },
-          ]);
-        }
+        setZonesError(null);
+        const data = await apiService.fetchZones();
+        setZones(data);
       } catch (error) {
         console.error('Error fetching zones:', error);
+        setZonesError('Failed to load zones. Using offline data.');
         // Fallback to mock data if API fails
         setZones([
           { id: 1, name: 'Dhaka North', description: '', is_active: true },
@@ -118,6 +94,46 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
 
     fetchZones();
   }, []);
+  const retryLoadZones = () => {
+    setIsLoadingZones(true);
+    setZonesError(null);
+    // Trigger useEffect again
+    const fetchZones = async () => {
+      try {
+        const data = await apiService.fetchZones();
+        setZones(data);
+        setZonesError(null);
+      } catch (error) {
+        console.error('Error fetching zones:', error);
+        setZonesError('Failed to load zones. Using offline data.');
+      } finally {
+        setIsLoadingZones(false);
+      }
+    };
+    fetchZones();
+  };
+
+  // Calculate form completion percentage
+  const calculateProgress = (): number => {
+    const requiredFields = [
+      'profilePhoto', 'fullName', 'phone', 'dateOfBirth', 'bloodGroup', 
+      'profession', 'idDocumentNumber', 'idDocumentPhoto', 'holdingIdPhoto',
+      'address', 'zone', 'emergencyContact', 'emergencyPhone'
+    ];
+    
+    let completed = 0;
+    requiredFields.forEach(field => {
+      if (formData[field as keyof FormData]) {
+        completed++;
+      }
+    });
+    
+    // Add checkboxes
+    if (formData.agreeTerms) completed++;
+    if (formData.citizenshipConfirm) completed++;
+    
+    return Math.round((completed / (requiredFields.length + 2)) * 100);
+  };
 
   const calculateAge = (dateOfBirth: string): number => {
     const today = new Date();
@@ -199,8 +215,7 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  };  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
     const files = (e.target as HTMLInputElement).files;
@@ -210,12 +225,38 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
       [name]: type === 'checkbox' ? checked : type === 'file' ? (files ? files[0] : null) : value
     }));
 
-    // Clear error when user starts typing
+    // Clear error when user starts typing/changing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
-  };
 
+    // Clear submit message when user starts making changes
+    if (submitMessage) {
+      setSubmitMessage(null);
+    }
+
+    // Real-time validation feedback for some fields
+    if (name === 'email' && value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        setErrors(prev => ({ ...prev, email: 'Please enter a valid email address' }));
+      }
+    }
+
+    if (name === 'phone' && value) {
+      const phoneRegex = /^(\+8801|01)[3-9]\d{8}$/;
+      if (!phoneRegex.test(value)) {
+        setErrors(prev => ({ ...prev, phone: 'Please enter a valid Bangladesh phone number' }));
+      }
+    }
+
+    if (name === 'dateOfBirth' && value) {
+      const age = calculateAge(value);
+      if (age < 15) {
+        setErrors(prev => ({ ...prev, dateOfBirth: 'You must be at least 15 years old to join' }));
+      }
+    }
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -224,40 +265,82 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Convert FormData to MembershipApplicationData
+      const applicationData: MembershipApplicationData = {
+        profilePhoto: formData.profilePhoto,
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        alternativePhone: formData.alternativePhone,
+        dateOfBirth: formData.dateOfBirth,
+        bloodGroup: formData.bloodGroup,
+        profession: formData.profession,
+        hobbies: formData.hobbies,
+        idDocumentType: formData.idDocumentType,
+        idDocumentNumber: formData.idDocumentNumber,
+        idDocumentPhoto: formData.idDocumentPhoto,
+        holdingIdPhoto: formData.holdingIdPhoto,
+        address: formData.address,
+        zone: formData.zone,
+        emergencyContact: formData.emergencyContact,
+        emergencyPhone: formData.emergencyPhone,
+        hasMotorbike: formData.hasMotorbike,
+        motorcycleBrand: formData.motorcycleBrand,
+        motorcycleModel: formData.motorcycleModel,
+        motorcycleYear: formData.motorcycleYear,
+        ridingExperience: formData.ridingExperience,
+        agreeTerms: formData.agreeTerms,
+        citizenshipConfirm: formData.citizenshipConfirm,
+      };      // Submit to backend API
+      const response = await apiService.submitMembershipApplication(applicationData);
       
-      // Success - redirect or show success message
-      alert('Application submitted successfully! We will contact you soon.');      // Reset form      
-      setFormData({
-        profilePhoto: null,
-        fullName: '',
-        email: '',
-        phone: '',
-        alternativePhone: '',
-        dateOfBirth: '',
-        bloodGroup: '',
-        profession: '',
-        hobbies: '',
-        idDocumentType: 'nid',
-        idDocumentNumber: '',
-        idDocumentPhoto: null,
-        holdingIdPhoto: null,
-        address: '',
-        zone: '',
-        emergencyContact: '',
-        emergencyPhone: '',
-        hasMotorbike: false,
-        motorcycleBrand: '',
-        motorcycleModel: '',
-        motorcycleYear: '',
-        ridingExperience: 'beginner',
-        agreeTerms: false,
-        citizenshipConfirm: false,
+      // Success - show success message
+      setSubmitMessage({
+        type: 'success',
+        message: response.message || 'Application submitted successfully! We will contact you soon.'
       });
       
+      // Reset form after a short delay
+      setTimeout(() => {
+        setFormData({
+          profilePhoto: null,
+          fullName: '',
+          email: '',
+          phone: '',
+          alternativePhone: '',
+          dateOfBirth: '',
+          bloodGroup: '',
+          profession: '',
+          hobbies: '',
+          idDocumentType: 'nid',
+          idDocumentNumber: '',
+          idDocumentPhoto: null,
+          holdingIdPhoto: null,
+          address: '',
+          zone: '',
+          emergencyContact: '',
+          emergencyPhone: '',
+          hasMotorbike: false,
+          motorcycleBrand: '',
+          motorcycleModel: '',
+          motorcycleYear: '',
+          ridingExperience: 'beginner',
+          agreeTerms: false,
+          citizenshipConfirm: false,
+        });
+        
+        // Clear any existing errors
+        setErrors({});
+        setSubmitMessage(null);
+      }, 3000);
+      
     } catch (error) {
-      alert('Something went wrong. Please try again.');
+      console.error('Submission error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+      setSubmitMessage({
+        type: 'error',
+        message: errorMessage
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -284,11 +367,45 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Fill out the application form below to become a member of our motorcycle community
           </p>
-        </div>
-
-        {/* Form */}
+        </div>        {/* Form */}
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20">
-          <form onSubmit={handleSubmit} className="space-y-6">            {/* Personal Information */}
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-white">Form Progress</span>
+              <span className="text-sm font-medium text-white">{calculateProgress()}%</span>
+            </div>
+            <div className="w-full bg-white/10 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${calculateProgress()}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Success/Error Message */}
+          {submitMessage && (
+            <div className={`mb-6 p-4 rounded-lg ${
+              submitMessage.type === 'success' 
+                ? 'bg-green-500/20 border border-green-500/30 text-green-300' 
+                : 'bg-red-500/20 border border-red-500/30 text-red-300'
+            }`}>
+              <div className="flex items-center">
+                {submitMessage.type === 'success' ? (
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+                <span className="font-medium">{submitMessage.message}</span>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">{/* Personal Information */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-6 border-b border-purple-500/30 pb-2">
                 Personal Information
@@ -446,6 +563,19 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                       </option>
                     ))}
                   </select>
+                  {zonesError && (
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-yellow-400 text-sm">{zonesError}</p>
+                      <button
+                        type="button"
+                        onClick={retryLoadZones}
+                        disabled={isLoadingZones}
+                        className="text-purple-400 hover:text-purple-300 text-sm underline disabled:opacity-50"
+                      >
+                        {isLoadingZones ? 'Retrying...' : 'Retry'}
+                      </button>
+                    </div>
+                  )}
                   {errors.zone && <p className="text-red-400 text-sm mt-1">{errors.zone}</p>}
                 </div>
               </div>
