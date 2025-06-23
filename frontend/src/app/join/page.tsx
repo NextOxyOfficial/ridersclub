@@ -373,8 +373,8 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
           </p>
         </div>        {/* Form */}
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20">
-          {/* Progress Bar */}
-          <div className="mb-8">
+          {/* Sticky Progress Bar */}
+          <div className="sticky top-4 z-10 mb-8 bg-white/10 backdrop-blur-lg rounded-lg p-4 border border-white/20">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-white">Form Progress</span>
               <span className="text-sm font-medium text-white">{calculateProgress()}%</span>
@@ -386,28 +386,6 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
               ></div>
             </div>
           </div>
-
-          {/* Success/Error Message */}
-          {submitMessage && (
-            <div className={`mb-6 p-4 rounded-lg ${
-              submitMessage.type === 'success' 
-                ? 'bg-green-500/20 border border-green-500/30 text-green-300' 
-                : 'bg-red-500/20 border border-red-500/30 text-red-300'
-            }`}>
-              <div className="flex items-center">
-                {submitMessage.type === 'success' ? (
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                )}
-                <span className="font-medium">{submitMessage.message}</span>
-              </div>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">{/* Personal Information */}
             <div className="mb-8">
@@ -841,10 +819,30 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                 </div>
                 {errors.agreeTerms && <p className="text-red-400 text-sm">{errors.agreeTerms}</p>}
               </div>
-            </div>
-
-            {/* Submit Button */}
+            </div>            {/* Submit Button */}
             <div className="text-center">
+              {/* Success/Error Message */}
+              {submitMessage && (
+                <div className={`mb-6 p-4 rounded-lg ${
+                  submitMessage.type === 'success' 
+                    ? 'bg-green-500/20 border border-green-500/30 text-green-300' 
+                    : 'bg-red-500/20 border border-red-500/30 text-red-300'
+                }`}>
+                  <div className="flex items-center justify-center">
+                    {submitMessage.type === 'success' ? (
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    )}
+                    <span className="font-medium">{submitMessage.message}</span>
+                  </div>
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={isSubmitting}
