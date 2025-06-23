@@ -31,14 +31,14 @@ export default function Home() {
           </div>
         </div>
       </nav>      {/* Hero Section */}
-      <div className="flex flex-col pt-20 pb-10 items-center justify-center min-h-screen px-2 sm:px-4okaysss">        
+      <div className="flex flex-col pt-20 pb-10 items-center justify-center min-h-screen px-2 sm:px-4">
         <div className="text-center mb-8 mt-8">
           <div className="relative inline-block">
             <h1 className="text-5xl md:text-7xl font-black text-transparent bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text mb-2 drop-shadow-2xl">
               Rider's Club Bangladesh
             </h1>
             <div className="absolute -top-2 -right-4 md:-right-8">
-              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs md:text-sm font-semibold shadow-lg transform rotate-12 hover:rotate-6 transition-transform duration-300">
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white pr-5 py-1 rounded-full text-xs md:text-sm font-semibold shadow-lg transform rotate-12 hover:rotate-6 transition-transform duration-300">
                 <span className="text-purple-100">by</span> <span className="text-white font-bold">Lyricz Motors</span>
               </div>
             </div>
@@ -49,7 +49,7 @@ export default function Home() {
         </div>
 
         {/* Follow Us Section */}
-        <div className="mb-8 bg-white/5 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/10 mx-2 sm:mx-4"><div className="text-center mb-6">
+        <div className="mb-8 bg-white/5 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/10 max-sm:w-full mx-2 sm:mx-4"><div className="text-center mb-6">
             <h3 className="text-2xl font-bold text-white mb-2">Follow Us</h3>
             <p className="text-gray-300">Stay connected with our community</p>
           </div>
@@ -90,10 +90,8 @@ export default function Home() {
                 <div className="text-xs text-orange-100">AdsyBN</div>
               </div>
             </a>
-          </div></div>
-
-        {/* App Download Section */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20">
+          </div></div>        {/* App Download Section */}
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20 mx-2 sm:mx-4">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-white mb-2">
               Get the Mobile App
