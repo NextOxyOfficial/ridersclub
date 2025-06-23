@@ -86,12 +86,9 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
     
     return age;
   };  const validateForm = (): boolean => {
-    const newErrors: { [key: string]: string } = {};
-
-    // Required fields validation
+    const newErrors: { [key: string]: string } = {};    // Required fields validation
     if (!formData.profilePhoto) newErrors.profilePhoto = 'Profile photo is required';
     if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
     if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
     if (!formData.bloodGroup) newErrors.bloodGroup = 'Blood group is required';
@@ -122,9 +119,7 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
       if (age < 15) {
         newErrors.dateOfBirth = 'You must be at least 15 years old to join';
       }
-    }
-
-    // ID Document validation based on type
+    }    // ID Document validation based on type
     if (formData.idDocumentNumber) {
       if (formData.idDocumentType === 'nid') {
         const nidRegex = /^\d{10}$|^\d{13}$|^\d{17}$/;
@@ -136,8 +131,13 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
         if (!birthCertRegex.test(formData.idDocumentNumber)) {
           newErrors.idDocumentNumber = 'Please enter a valid birth certificate number';
         }
+      } else if (formData.idDocumentType === 'passport') {
+        const passportRegex = /^[A-Z]{2}\d{7}$/;
+        if (!passportRegex.test(formData.idDocumentNumber)) {
+          newErrors.idDocumentNumber = 'Please enter a valid passport number (e.g., AB1234567)';
+        }
       }
-    }    // File size validation (max 5MB)
+    }// File size validation (max 5MB)
     if (formData.profilePhoto && formData.profilePhoto.size > 5 * 1024 * 1024) {
       newErrors.profilePhoto = 'Profile photo must be less than 5MB';
     }
@@ -277,11 +277,9 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                     placeholder="Enter your full name"
                   />
                   {errors.fullName && <p className="text-red-400 text-sm mt-1">{errors.fullName}</p>}
-                </div>
-
-                <div>
+                </div>                <div>
                   <label className="block text-white font-medium mb-2">
-                    Email Address *
+                    Email Address
                   </label>
                   <input
                     type="email"
@@ -289,10 +287,10 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                     value={formData.email}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="your.email@example.com"
+                    placeholder="your.email@example.com (Optional)"
                   />
                   {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
-                </div>                <div>
+                </div><div>
                   <label className="block text-white font-medium mb-2">
                     Phone Number * 
                   </label>
@@ -425,12 +423,13 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                   >
                     <option value="nid" className="bg-white text-black">National ID (NID)</option>
                     <option value="birth_certificate" className="bg-white text-black">Birth Certificate</option>
+                    <option value="passport" className="bg-white text-black">Passport</option>
                   </select>
-                </div>
-
-                <div>
+                </div>                <div>
                   <label className="block text-white font-medium mb-2">
-                    {formData.idDocumentType === 'nid' ? 'NID Number *' : 'Birth Certificate Number *'}
+                    {formData.idDocumentType === 'nid' ? 'NID Number *' : 
+                     formData.idDocumentType === 'birth_certificate' ? 'Birth Certificate Number *' : 
+                     'Passport Number *'}
                   </label>
                   <input
                     type="text"
@@ -441,7 +440,9 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
                     placeholder={
                       formData.idDocumentType === 'nid' 
                         ? 'Bangladesh NID Number' 
-                        : 'Birth Certificate Number'
+                        : formData.idDocumentType === 'birth_certificate'
+                        ? 'Birth Certificate Number'
+                        : 'Passport Number'
                     }
                   />
                   {errors.idDocumentNumber && <p className="text-red-400 text-sm mt-1">{errors.idDocumentNumber}</p>}
