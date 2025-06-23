@@ -33,15 +33,17 @@ export default function Home() {
 
       {/* Hero Section */}
       <div className="flex flex-col pt-20 pb-10 items-center justify-center min-h-screen px-4">        <div className="text-center mb-8">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-2">
-            Rider's Club Bangladesh
-          </h1>
-          <div className="mb-6">
-            <p className="text-lg md:text-xl text-purple-300 font-medium tracking-wide">
-              <span className="text-gray-400">by</span> <span className="text-purple-200 font-semibold">Lyricz Motors</span>
-            </p>
+          <div className="relative inline-block">
+            <h1 className="text-5xl md:text-7xl font-black text-transparent bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text mb-2 drop-shadow-2xl">
+              Rider's Club Bangladesh
+            </h1>
+            <div className="absolute -top-2 -right-4 md:-right-8">
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs md:text-sm font-semibold shadow-lg transform rotate-12 hover:rotate-6 transition-transform duration-300">
+                <span className="text-purple-100">by</span> <span className="text-white font-bold">Lyricz Motors</span>
+              </div>
+            </div>
           </div>
-          <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto mt-8">
             Join the ultimate community for motorcycle enthusiasts. Connect, ride, and share your passion.
           </p>
         </div>
