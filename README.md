@@ -43,7 +43,7 @@ ridersclub/
 ### Backend
 - **Django 5.2.3** - Web framework
 - **Django REST Framework** - API development
-- **SQLite** - Database (development)
+- **PostgreSQL** - Database
 - **Pillow** - Image processing
 - **django-cors-headers** - CORS support
 
@@ -59,6 +59,7 @@ ridersclub/
 ### Prerequisites
 - Python 3.12+
 - Node.js 18+
+- PostgreSQL
 - Git
 
 ### 1. Clone the Repository
@@ -73,6 +74,10 @@ cd backend
 
 # Install Python dependencies
 pip install -r requirements.txt
+
+# Set up PostgreSQL database
+# Create database: ridersclub_db
+# Update .env file with your PostgreSQL credentials
 
 # Run migrations
 python manage.py migrate

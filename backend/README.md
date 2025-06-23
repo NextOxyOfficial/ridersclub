@@ -13,15 +13,16 @@ A Django REST API backend for the Riders Club application, providing endpoints f
 
 ## Technology Stack
 
-- Django 5.2.3
-- Django REST Framework
-- django-cors-headers
-- SQLite (development)
-- Pillow (image processing)
+- **Django 5.2.3** - Web framework
+- **Django REST Framework** - API development
+- **PostgreSQL** - Database
+- **Pillow** - Image processing
+- **django-cors-headers** - CORS support
+- **psycopg2-binary** - PostgreSQL adapter
 
 ## Installation
 
-1. Make sure Python 3.12+ is installed
+1. Make sure Python 3.12+ and PostgreSQL are installed
 2. Navigate to the backend directory:
    ```bash
    cd backend
@@ -32,17 +33,22 @@ A Django REST API backend for the Riders Club application, providing endpoints f
    pip install -r requirements.txt
    ```
 
-4. Run migrations:
+4. Set up PostgreSQL database:
+   - Create a database named `ridersclub_db`
+   - Update the `.env` file with your PostgreSQL credentials
+   - See `POSTGRESQL_SETUP.md` for detailed instructions
+
+5. Run migrations:
    ```bash
    python manage.py migrate
    ```
 
-5. Create a superuser (optional):
+6. Create a superuser (optional):
    ```bash
    python manage.py createsuperuser
    ```
 
-6. Start the development server:
+7. Start the development server:
    ```bash
    python manage.py runserver
    ```
