@@ -54,13 +54,12 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
     agreeTerms: false,
     citizenshipConfirm: false,
   });
-
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [zones, setZones] = useState<{ id: string; name: string }[]>([]);
 
   // Mock zones data - replace with API call
-  const mockZones = [
+  // Initialize directly to avoid hydration mismatch
+  const zones = [
     { id: '1', name: 'Dhaka North' },
     { id: '2', name: 'Dhaka South' },
     { id: '3', name: 'Chittagong' },
@@ -74,13 +73,6 @@ export default function JoinPage() {  const [formData, setFormData] = useState<F
     { id: '11', name: 'Cox\'s Bazar' },
     { id: '12', name: 'Gazipur' },
   ];
-
-  // Load zones on component mount
-  React.useEffect(() => {
-    // TODO: Replace with actual API call
-    // fetchZones().then(setZones);
-    setZones(mockZones);
-  }, []);
 
   const calculateAge = (dateOfBirth: string): number => {
     const today = new Date();
