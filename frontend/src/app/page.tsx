@@ -4,7 +4,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Navigation */}
-      <nav className="absolute top-0 left-0 right-0 z-10 p-6">          <div className="max-w-6xl mx-auto flex justify-between items-center">
+      <nav className="absolute top-0 left-0 right-0 z-10 p-6">          
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="group cursor-pointer">
             <div className="relative">
               <div className="text-white font-black text-2xl tracking-wider bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent transform transition-all duration-300 hover:scale-110 hover:rotate-1">
@@ -32,7 +33,8 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <div className="flex flex-col pt-20 pb-10 items-center justify-center min-h-screen px-4">        <div className="text-center mb-8">
+      <div className="flex flex-col pt-20 pb-10 items-center justify-center min-h-screen px-4">        
+        <div className="text-center mb-8 mt-8">
           <div className="relative inline-block">
             <h1 className="text-5xl md:text-7xl font-black text-transparent bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text mb-2 drop-shadow-2xl">
               Rider's Club Bangladesh
