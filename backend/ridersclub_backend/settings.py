@@ -179,6 +179,14 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
+# Allow frontend to access the API
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

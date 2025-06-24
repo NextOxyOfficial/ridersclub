@@ -3,17 +3,23 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { apiService, UserProfile, ChangePasswordData, Benefit } from '../../services/api';
+import { apiService, UserProfile, ChangePasswordData, Benefit, RideEvent } from '../../services/api';
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<UserProfile | null>(null);  const [benefits, setBenefits] = useState<Benefit[]>([]);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [benefits, setBenefits] = useState<Benefit[]>([]);
   const [benefitsLoading, setBenefitsLoading] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);  const [error, setError] = useState<string>('');  const [activeEventTab, setActiveEventTab] = useState<'upcoming' | 'previous'>('upcoming');
-  const [registeredEvents, setRegisteredEvents] = useState<Set<string>>(new Set());  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [events, setEvents] = useState<RideEvent[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<RideEvent[]>([]);
+  const [pastEvents, setPastEvents] = useState<RideEvent[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>('');
+  const [activeEventTab, setActiveEventTab] = useState<'upcoming' | 'previous'>('upcoming');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<RideEvent | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
-  const [selectedEventPhotos, setSelectedEventPhotos] = useState<any>(null);const [passwordData, setPasswordData] = useState<ChangePasswordData & { confirm_password: string }>({
+  const [selectedEventPhotos, setSelectedEventPhotos] = useState<RideEvent | null>(null);const [passwordData, setPasswordData] = useState<ChangePasswordData & { confirm_password: string }>({
     old_password: '',
     new_password: '',
     confirm_password: '',
@@ -21,30 +27,52 @@ export default function DashboardPage() {
   const [passwordError, setPasswordError] = useState<string>('');
   const [passwordSuccess, setPasswordSuccess] = useState<string>('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const router = useRouter();
-  useEffect(() => {
+  const router = useRouter();  useEffect(() => {
     const checkAuth = async () => {
       if (!apiService.isAuthenticated()) {
         router.push('/login');
         return;
-      }      try {
-        const [userProfile, allBenefits] = await Promise.all([
+      }
+
+      try {
+        const [userProfile, allBenefits, allEvents] = await Promise.all([
           apiService.getCurrentUser(),
-          apiService.fetchBenefits() // Fetch all benefits instead of just featured
+          apiService.fetchBenefits(), // Fetch all benefits instead of just featured
+          apiService.fetchEvents() // Fetch all events
         ]);
         
         setUser(userProfile);
         setBenefits(allBenefits); // Show all benefits
+        setEvents(allEvents);
+        
+        // Separate upcoming and past events
+        const upcoming = allEvents.filter(event => event.is_upcoming);
+        const past = allEvents.filter(event => event.is_past);
+        
+        setUpcomingEvents(upcoming);
+        setPastEvents(past);
+        
       } catch (error) {
         console.error('Error fetching data:', error);
-        setError('Failed to load dashboard data');
-        // If token is invalid, redirect to login
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        router.push('/login');
+        
+        // Check if it's a network/server error vs authentication error
+        if (error instanceof Error && (
+          error.message.includes('Failed to fetch') || 
+          error.message.includes('500') ||
+          error.message.includes('Internal Server Error')
+        )) {
+          setError('Backend server is not running. Please start the Django server on port 8000.');
+        } else {
+          setError('Failed to load dashboard data');
+          // If token is invalid, redirect to login
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          router.push('/login');
+        }
       } finally {
         setIsLoading(false);
         setBenefitsLoading(false);
+        setEventsLoading(false);
       }
     };
 
@@ -62,128 +90,72 @@ export default function DashboardPage() {
       if (websiteUrl) {
         window.open(websiteUrl, '_blank');
       }
-    }  };  const handleJoinEvent = async (eventId: string, eventName: string) => {
-    // Check if already registered, if so unregister
-    if (registeredEvents.has(eventId)) {
-      // Immediately unregister the user
-      setRegisteredEvents(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(eventId);
-        return newSet;
-      });
+    }  };  const handleJoinEvent = async (eventId: number, eventName: string) => {
+    try {
+      const event = events.find(e => e.id === eventId);
+      if (!event) return;
       
-      try {
-        // Here you would make the actual API call to leave the event
-        // await apiService.leaveEvent(eventId);
-        
+      if (event.user_registered) {
+        // User is registered, so leave the event
+        await apiService.leaveEvent(eventId);
         console.log(`Successfully unregistered from event: ${eventName}`);
-      } catch (error) {
-        console.error('Error unregistering from event:', error);
-        // Add back to registered state on error
-        setRegisteredEvents(prev => new Set(prev).add(eventId));
-      }
-    } else {
-      // Immediately register the user
-      setRegisteredEvents(prev => new Set(prev).add(eventId));
-      
-      try {
-        // Here you would make the actual API call to join the event
-        // await apiService.joinEvent(eventId);
         
+        // Update local state
+        setEvents(prevEvents => 
+          prevEvents.map(e => 
+            e.id === eventId 
+              ? { ...e, user_registered: false, current_joined: e.current_joined - 1 }
+              : e
+          )
+        );
+        
+        setUpcomingEvents(prevEvents => 
+          prevEvents.map(e => 
+            e.id === eventId 
+              ? { ...e, user_registered: false, current_joined: e.current_joined - 1 }
+              : e
+          )
+        );
+        
+      } else {
+        // User is not registered, so join the event
+        await apiService.joinEvent(eventId);
         console.log(`Successfully registered for event: ${eventName}`);
-      } catch (error) {
-        console.error('Error registering for event:', error);        // Remove from registered state on error
-        setRegisteredEvents(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(eventId);
-          return newSet;
-        });
+        
+        // Update local state
+        setEvents(prevEvents => 
+          prevEvents.map(e => 
+            e.id === eventId 
+              ? { ...e, user_registered: true, current_joined: e.current_joined + 1 }
+              : e
+          )
+        );
+        
+        setUpcomingEvents(prevEvents => 
+          prevEvents.map(e => 
+            e.id === eventId 
+              ? { ...e, user_registered: true, current_joined: e.current_joined + 1 }
+              : e
+          )
+        );
       }
+      
+    } catch (error) {
+      console.error('Error with event registration:', error);
+      setError('Failed to update event registration. Please try again.');
+    }
+  };
+  const openEventModal = (eventId: number) => {
+    const event = events.find(e => e.id === eventId);
+    if (event) {
+      setSelectedEvent(event);
+      setShowEventModal(true);
     }
   };
 
-  // Sample event data with full details
-  const eventData = {
-    'dhaka-night-ride': {
-      id: 'dhaka-night-ride',
-      title: 'Dhaka Night Ride',
-      date: 'December 30, 2024 • 8:00 PM',
-      location: 'Dhanmondi 27',
-      price: 'Free',
-      description: 'Join us for an exciting night ride through the streets of Dhaka. Safety gear mandatory.',
-      fullDescription: 'Experience the thrill of riding through Dhaka\'s illuminated streets at night. This guided tour will take you through the most scenic and safe routes in the city. We\'ll start from Dhanmondi and make our way through key landmarks including Rabindra Sarobar, TSC, and the Parliament area. Professional marshals will ensure safety throughout the journey.',
-      requirements: ['Valid driving license', 'Safety helmet (mandatory)', 'Reflective vest', 'Working headlight and taillight'],
-      duration: '3 hours',
-      difficulty: 'Beginner',
-      maxParticipants: 50,
-      currentJoined: 23,
-      organizer: 'Dhaka Zone Team'
-    },
-    'annual-club-meet-2024': {
-      id: 'annual-club-meet-2024',
-      title: 'Annual Club Meet 2024',
-      date: 'December 15, 2024 • Completed',
-      description: 'Successful annual meetup with 150+ members. Great networking and fun activities.',
-      photos: [
-        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1517654978162-8321df66b51c?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1502741224143-90386d7f8c82?w=800&h=600&fit=crop'
-      ]
-    },
-    'chittagong-hill-ride': {
-      id: 'chittagong-hill-ride',
-      title: 'Chittagong Hill Ride',
-      date: 'November 28, 2024 • Completed',
-      description: 'Amazing hill track adventure with scenic views and challenging routes.',
-      photos: [
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1464822759844-d150baec93c5?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=800&h=600&fit=crop'
-      ]
-    },
-    'safety-workshop': {
-      id: 'safety-workshop',
-      title: 'Safety Workshop',
-      date: 'January 5, 2025 • 2:00 PM',
-      location: 'Club House',
-      price: '৳500',
-      description: 'Learn essential riding safety tips and techniques from professional instructors.',
-      fullDescription: 'A comprehensive workshop covering all aspects of motorcycle safety. Learn from certified instructors about defensive riding techniques, emergency braking, cornering safety, and road hazard awareness. The workshop includes both theoretical sessions and practical demonstrations.',
-      requirements: ['Own motorcycle for practical session', 'Safety gear', 'Notebook for taking notes'],
-      duration: '4 hours',
-      difficulty: 'All levels',
-      maxParticipants: 30,
-      currentJoined: 18,
-      organizer: 'Safety Committee'
-    },
-    'coxs-bazar-tour': {
-      id: 'coxs-bazar-tour',
-      title: "Cox's Bazar Tour",
-      date: 'January 15-17, 2025',
-      location: "Cox's Bazar",
-      price: '৳15,000',
-      description: '3-day adventure tour to Cox\'s Bazar. Accommodation and meals included.',
-      fullDescription: 'An unforgettable 3-day motorcycle tour to the world\'s longest natural sea beach. The package includes accommodation at a beachfront resort, all meals, guided tours to local attractions, and support vehicle throughout the journey. Experience the beauty of Cox\'s Bazar, visit Inani Beach, and enjoy group bonding activities.',
-      requirements: ['Long-distance riding experience', 'Valid documents for travel', 'Personal medications', 'Casual and riding gear'],
-      duration: '3 days, 2 nights',
-      difficulty: 'Intermediate',
-      maxParticipants: 25,
-      currentJoined: 12,
-      organizer: 'Tour Committee'
-    }
-  };
-  const openEventModal = (eventId: string) => {
-    setSelectedEvent(eventData[eventId as keyof typeof eventData]);
-    setShowEventModal(true);
-  };
-
-  const openPhotoModal = (eventId: string) => {
-    const event = eventData[eventId as keyof typeof eventData];
-    if (event && 'photos' in event) {
+  const openPhotoModal = (eventId: number) => {
+    const event = events.find(e => e.id === eventId);
+    if (event && event.photos && event.photos.length > 0) {
       setSelectedEventPhotos(event);
       setShowPhotoModal(true);
     }
@@ -423,207 +395,183 @@ export default function DashboardPage() {
                       <span className="text-blue-400 text-xs font-medium">3 Events Scheduled</span>
                     </div>
                   </div>
-                  
-                  {/* Sample Upcoming Events */}
-                  <div className="space-y-3">
-                    <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl p-4 border border-blue-400/30">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center mr-3">
-                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <h4 className="text-white font-bold text-lg">Dhaka Night Ride</h4>
-                              <p className="text-blue-300 text-sm">December 30, 2024 • 8:00 PM</p>
-                            </div>
-                          </div>                          <p className="text-gray-300 text-sm mb-2">Join us for an exciting night ride through the streets of Dhaka. Safety gear mandatory.</p>                          <div className="flex items-center space-x-4 text-xs">
-                            <span className="bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full">📍 Dhanmondi 27</span>
-                            <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">🎫 Free</span>
-                          </div>
-                          <div className="flex items-center justify-between mt-2">
-                            <button 
-                              onClick={() => openEventModal('dhaka-night-ride')}
-                              className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
-                            >
-                              Read More →
-                            </button>
-                            <button 
-                              onClick={() => handleJoinEvent('dhaka-night-ride', 'Dhaka Night Ride')}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                registeredEvents.has('dhaka-night-ride')
-                                  ? 'bg-green-500 hover:bg-red-500 text-white'
-                                  : 'bg-blue-500 hover:bg-blue-600 text-white'
-                              }`}
-                            >
-                              {registeredEvents.has('dhaka-night-ride') ? 'Registered' : "I'll Join"}
-                            </button>
-                          </div>
-                        </div>
+                    {/* Upcoming Events */}
+                  {eventsLoading ? (
+                    <div className="space-y-3">
+                      <div className="bg-gray-500/20 backdrop-blur-sm rounded-2xl p-4 border border-gray-400/30 animate-pulse">
+                        <div className="h-4 bg-gray-400 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-gray-400 rounded w-1/2"></div>
                       </div>
                     </div>
-
-                    <div className="bg-gradient-to-r from-emerald-500/20 to-green-500/20 backdrop-blur-sm rounded-2xl p-4 border border-emerald-400/30">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center mr-3">
-                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
-                              </svg>
+                  ) : upcomingEvents.length > 0 ? (
+                    <div className="space-y-3">
+                      {upcomingEvents.map((event, index) => (
+                        <div key={event.id} className={`bg-gradient-to-r ${
+                          index % 3 === 0 ? 'from-blue-500/20 to-purple-500/20 border-blue-400/30' :
+                          index % 3 === 1 ? 'from-emerald-500/20 to-green-500/20 border-emerald-400/30' :
+                          'from-orange-500/20 to-red-500/20 border-orange-400/30'
+                        } backdrop-blur-sm rounded-2xl p-4 border`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center mb-2">
+                                <div className={`w-10 h-10 bg-gradient-to-br ${
+                                  index % 3 === 0 ? 'from-blue-400 to-blue-600' :
+                                  index % 3 === 1 ? 'from-emerald-400 to-emerald-600' :
+                                  'from-orange-400 to-red-500'
+                                } rounded-xl flex items-center justify-center mr-3`}>
+                                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <h4 className="text-white font-bold text-lg">{event.title}</h4>
+                                  <p className={`${
+                                    index % 3 === 0 ? 'text-blue-300' :
+                                    index % 3 === 1 ? 'text-emerald-300' :
+                                    'text-orange-300'
+                                  } text-sm`}>
+                                    {event.date} • {event.time}
+                                  </p>
+                                </div>
+                              </div>
+                              <p className="text-gray-300 text-sm mb-2">{event.description}</p>
+                              <div className="flex items-center space-x-4 text-xs">
+                                <span className={`${
+                                  index % 3 === 0 ? 'bg-blue-500/30 text-blue-300' :
+                                  index % 3 === 1 ? 'bg-emerald-500/30 text-emerald-300' :
+                                  'bg-orange-500/30 text-orange-300'
+                                } px-2 py-1 rounded-full`}>
+                                  📍 {event.location}
+                                </span>
+                                <span className={`${
+                                  event.price === 0 ? 'bg-green-500/30 text-green-300' : 'bg-yellow-500/30 text-yellow-300'
+                                } px-2 py-1 rounded-full`}>
+                                  🎫 {event.price === 0 ? 'Free' : `৳${event.price}`}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between mt-2">
+                                <button 
+                                  onClick={() => openEventModal(event.id)}
+                                  className={`${
+                                    index % 3 === 0 ? 'text-blue-400 hover:text-blue-300' :
+                                    index % 3 === 1 ? 'text-emerald-400 hover:text-emerald-300' :
+                                    'text-orange-400 hover:text-orange-300'
+                                  } text-sm font-medium transition-colors`}
+                                >
+                                  Read More →
+                                </button>
+                                <button 
+                                  onClick={() => handleJoinEvent(event.id, event.title)}
+                                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                    event.user_registered
+                                      ? 'bg-green-500 hover:bg-red-500 text-white'
+                                      : `${
+                                          index % 3 === 0 ? 'bg-blue-500 hover:bg-blue-600' :
+                                          index % 3 === 1 ? 'bg-emerald-500 hover:bg-emerald-600' :
+                                          'bg-orange-500 hover:bg-orange-600'
+                                        } text-white`
+                                  }`}
+                                >
+                                  {event.user_registered ? 'Registered' : "I'll Join"}
+                                </button>
+                              </div>
                             </div>
-                            <div>
-                              <h4 className="text-white font-bold text-lg">Safety Workshop</h4>
-                              <p className="text-emerald-300 text-sm">January 5, 2025 • 2:00 PM</p>
-                            </div>
-                          </div>                          <p className="text-gray-300 text-sm mb-2">Learn essential riding safety tips and techniques from professional instructors.</p>                          <div className="flex items-center space-x-4 text-xs">
-                            <span className="bg-emerald-500/30 text-emerald-300 px-2 py-1 rounded-full">📍 Club House</span>
-                            <span className="bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded-full">🎫 ৳500</span>
-                          </div>
-                          <div className="flex items-center justify-between mt-2">
-                            <button 
-                              onClick={() => openEventModal('safety-workshop')}
-                              className="text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors"
-                            >
-                              Read More →
-                            </button>
-                            <button 
-                              onClick={() => handleJoinEvent('safety-workshop', 'Safety Workshop')}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                registeredEvents.has('safety-workshop')
-                                  ? 'bg-green-500 hover:bg-red-500 text-white'
-                                  : 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                              }`}
-                            >
-                              {registeredEvents.has('safety-workshop') ? 'Registered' : "I'll Join"}
-                            </button>
                           </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
-
-                    <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 backdrop-blur-sm rounded-2xl p-4 border border-orange-400/30">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mr-3">
-                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <h4 className="text-white font-bold text-lg">Cox's Bazar Tour</h4>
-                              <p className="text-orange-300 text-sm">January 15-17, 2025</p>
-                            </div>
-                          </div>                          <p className="text-gray-300 text-sm mb-2">3-day adventure tour to Cox's Bazar. Accommodation and meals included.</p>                          <div className="flex items-center space-x-4 text-xs">
-                            <span className="bg-orange-500/30 text-orange-300 px-2 py-1 rounded-full">🏖️ Cox's Bazar</span>
-                            <span className="bg-red-500/30 text-red-300 px-2 py-1 rounded-full">🎫 ৳15,000</span>
-                          </div>
-                          <div className="flex items-center justify-between mt-2">
-                            <button 
-                              onClick={() => openEventModal('coxs-bazar-tour')}
-                              className="text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors"
-                            >
-                              Read More →
-                            </button>
-                            <button 
-                              onClick={() => handleJoinEvent('coxs-bazar-tour', "Cox's Bazar Tour")}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                registeredEvents.has('coxs-bazar-tour')
-                                  ? 'bg-green-500 hover:bg-red-500 text-white'
-                                  : 'bg-orange-500 hover:bg-orange-600 text-white'
-                              }`}
-                            >
-                              {registeredEvents.has('coxs-bazar-tour') ? 'Registered' : "I'll Join"}
-                            </button>
-                          </div>
-                        </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-gray-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
                       </div>
+                      <p className="text-gray-400 text-lg">No upcoming events</p>
+                      <p className="text-gray-500 text-sm">Check back later for new events!</p>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 
               {activeEventTab === 'previous' && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between mb-4">
+                <div className="space-y-4">                  <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold text-white">Previous Events</h3>
                     <div className="flex items-center space-x-1">
                       <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                      <span className="text-gray-400 text-xs font-medium">5 Events Completed</span>
+                      <span className="text-gray-400 text-xs font-medium">{pastEvents.length} Events Completed</span>
                     </div>
                   </div>
                   
-                  {/* Sample Previous Events */}
-                  <div className="space-y-3">
-                    <div className="bg-gradient-to-r from-gray-500/20 to-slate-500/20 backdrop-blur-sm rounded-2xl p-4 border border-gray-400/30">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-gray-400 to-gray-600 rounded-xl flex items-center justify-center mr-3">
-                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <h4 className="text-white font-bold text-lg">Annual Club Meet 2024</h4>
-                              <p className="text-gray-300 text-sm">December 15, 2024 • Completed</p>
-                            </div>
-                          </div>
-                          <p className="text-gray-300 text-sm mb-2">Successful annual meetup with 150+ members. Great networking and fun activities.</p>                          <div className="flex items-center space-x-4 text-xs">
-                            <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">✅ 150 Attended</span>
-                            <span className="bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full cursor-pointer hover:bg-blue-500/50 transition-colors" 
-                                  onClick={() => openPhotoModal('annual-club-meet-2024')}>
-                              📸 View Photos
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>                    <div className="bg-gradient-to-r from-purple-500/20 to-indigo-500/20 backdrop-blur-sm rounded-2xl p-4 border border-purple-400/30">
-                      <div className="flex items-center">
-                        <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-indigo-600 rounded-xl flex items-center justify-center mr-3">
-                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <h4 className="text-white font-bold text-lg">Chittagong Hill Ride</h4>
-                              <p className="text-purple-300 text-sm">November 28, 2024 • Completed</p>
-                            </div>
-                          </div>                          <p className="text-gray-300 text-sm mb-2">Amazing hill track adventure with scenic views and challenging routes.</p>                          <div className="flex items-center space-x-4 text-xs">
-                            <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">✅ 45 Riders</span>
-                            <span className="bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full cursor-pointer hover:bg-blue-500/50 transition-colors" 
-                                  onClick={() => openPhotoModal('chittagong-hill-ride')}>
-                              📸 View Photos
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>                    <div className="bg-gradient-to-r from-teal-500/20 to-cyan-500/20 backdrop-blur-sm rounded-2xl p-4 border border-teal-400/30">
-                      <div className="flex items-center">
-                        <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-cyan-600 rounded-xl flex items-center justify-center mr-3">
-                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                              </svg>
-                            </div>
-                            <div>
-                              <h4 className="text-white font-bold text-lg">Maintenance Workshop</h4>
-                              <p className="text-teal-300 text-sm">October 20, 2024 • Completed</p>
-                            </div>
-                          </div>                          <p className="text-gray-300 text-sm mb-2">Hands-on motorcycle maintenance and repair workshop for all skill levels.</p>
-                          <div className="flex items-center space-x-4 text-xs">
-                            <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">✅ 80 Participants</span>
-                          </div>
-                        </div>
+                  {/* Previous Events */}
+                  {eventsLoading ? (
+                    <div className="space-y-3">
+                      <div className="bg-gray-500/20 backdrop-blur-sm rounded-2xl p-4 border border-gray-400/30 animate-pulse">
+                        <div className="h-4 bg-gray-400 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-gray-400 rounded w-1/2"></div>
                       </div>
                     </div>
-                  </div>
+                  ) : pastEvents.length > 0 ? (
+                    <div className="space-y-3">
+                      {pastEvents.map((event, index) => (
+                        <div key={event.id} className={`bg-gradient-to-r ${
+                          index % 3 === 0 ? 'from-gray-500/20 to-slate-500/20 border-gray-400/30' :
+                          index % 3 === 1 ? 'from-purple-500/20 to-indigo-500/20 border-purple-400/30' :
+                          'from-teal-500/20 to-cyan-500/20 border-teal-400/30'
+                        } backdrop-blur-sm rounded-2xl p-4 border`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center mb-2">
+                                <div className={`w-10 h-10 bg-gradient-to-br ${
+                                  index % 3 === 0 ? 'from-gray-400 to-gray-600' :
+                                  index % 3 === 1 ? 'from-purple-400 to-indigo-600' :
+                                  'from-teal-400 to-cyan-600'
+                                } rounded-xl flex items-center justify-center mr-3`}>
+                                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <h4 className="text-white font-bold text-lg">{event.title}</h4>
+                                  <p className={`${
+                                    index % 3 === 0 ? 'text-gray-300' :
+                                    index % 3 === 1 ? 'text-purple-300' :
+                                    'text-teal-300'
+                                  } text-sm`}>
+                                    {event.date} • Completed
+                                  </p>
+                                </div>
+                              </div>
+                              <p className="text-gray-300 text-sm mb-2">{event.description}</p>
+                              <div className="flex items-center space-x-4 text-xs">
+                                <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">
+                                  ✅ {event.current_joined} Attended
+                                </span>
+                                {event.photos && event.photos.length > 0 && (
+                                  <span 
+                                    className="bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full cursor-pointer hover:bg-blue-500/50 transition-colors" 
+                                    onClick={() => openPhotoModal(event.id)}
+                                  >
+                                    📸 View Photos
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-gray-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                      </div>
+                      <p className="text-gray-400 text-lg">No previous events</p>
+                      <p className="text-gray-500 text-sm">Completed events will appear here</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -823,8 +771,7 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            <div className="space-y-6">
-              {/* Event Header Info */}
+            <div className="space-y-6">              {/* Event Header Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white/5 rounded-lg p-3">
                   <div className="flex items-center text-blue-300 mb-1">
@@ -833,7 +780,7 @@ export default function DashboardPage() {
                     </svg>
                     <span className="text-sm font-medium">Date & Time</span>
                   </div>
-                  <p className="text-white font-semibold">{selectedEvent.date}</p>
+                  <p className="text-white font-semibold">{selectedEvent.date} • {selectedEvent.time}</p>
                 </div>
                 <div className="bg-white/5 rounded-lg p-3">
                   <div className="flex items-center text-purple-300 mb-1">
@@ -851,7 +798,7 @@ export default function DashboardPage() {
                     </svg>
                     <span className="text-sm font-medium">Price</span>
                   </div>
-                  <p className="text-white font-semibold">{selectedEvent.price}</p>
+                  <p className="text-white font-semibold">{selectedEvent.price === 0 ? 'Free' : `৳${selectedEvent.price}`}</p>
                 </div>
                 <div className="bg-white/5 rounded-lg p-3">
                   <div className="flex items-center text-orange-300 mb-1">
@@ -860,7 +807,7 @@ export default function DashboardPage() {
                     </svg>
                     <span className="text-sm font-medium">Participants</span>
                   </div>
-                  <p className="text-white font-semibold">{selectedEvent.currentJoined}/{selectedEvent.maxParticipants}</p>
+                  <p className="text-white font-semibold">{selectedEvent.current_joined}/{selectedEvent.max_participants}</p>
                 </div>
               </div>
 
@@ -872,35 +819,43 @@ export default function DashboardPage() {
                   </svg>
                   Event Description
                 </h3>
-                <p className="text-gray-300 leading-relaxed">{selectedEvent.fullDescription}</p>
-              </div>              {/* Event Details */}
-              <div className="bg-white/5 rounded-lg p-4">
-                <h4 className="text-white font-bold mb-2 flex items-center">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Duration
-                </h4>
-                <p className="text-gray-300">{selectedEvent.duration}</p>
+                <p className="text-gray-300 leading-relaxed">{selectedEvent.description}</p>
+              </div>
+
+              {/* Event Details */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/5 rounded-lg p-4">
+                  <h4 className="text-white font-bold mb-2 flex items-center">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Duration
+                  </h4>
+                  <p className="text-gray-300">{selectedEvent.duration}</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-4">
+                  <h4 className="text-white font-bold mb-2 flex items-center">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+                    </svg>
+                    Difficulty
+                  </h4>
+                  <p className="text-gray-300">{selectedEvent.difficulty}</p>
+                </div>
               </div>
 
               {/* Requirements */}
-              <div className="bg-white/5 rounded-lg p-4">
-                <h4 className="text-white font-bold mb-3 flex items-center">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                  </svg>
-                  Requirements
-                </h4>
-                <ul className="space-y-1">
-                  {selectedEvent.requirements.map((req: string, index: number) => (
-                    <li key={index} className="text-gray-300 flex items-center">
-                      <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
-                      {req}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {selectedEvent.requirements && (
+                <div className="bg-white/5 rounded-lg p-4">
+                  <h4 className="text-white font-bold mb-3 flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    Requirements
+                  </h4>
+                  <div className="text-gray-300 whitespace-pre-line">{selectedEvent.requirements}</div>
+                </div>
+              )}
 
               {/* Organizer */}
               <div className="bg-white/5 rounded-lg p-4">
@@ -910,24 +865,27 @@ export default function DashboardPage() {
                   </svg>
                   Organized by
                 </h4>
-                <p className="text-gray-300">{selectedEvent.organizer}</p>
+                <p className="text-gray-300">{selectedEvent.organizer_name}</p>
               </div>
 
               {/* Action Button */}
-              <div className="flex justify-center pt-4">
-                <button 
-                  onClick={() => {
-                    handleJoinEvent(selectedEvent.id, selectedEvent.title);
-                    setShowEventModal(false);
-                  }}
-                  className={`px-8 py-3 rounded-lg text-lg font-medium transition-colors ${
-                    registeredEvents.has(selectedEvent.id)
-                      ? 'bg-green-500 hover:bg-red-500 text-white'
-                      : 'bg-blue-500 hover:bg-blue-600 text-white'
-                  }`}
-                >
-                  {registeredEvents.has(selectedEvent.id) ? 'Registered - Click to Unregister' : "Join This Event"}
-                </button>              </div>
+              {selectedEvent.is_upcoming && (
+                <div className="flex justify-center pt-4">
+                  <button 
+                    onClick={() => {
+                      handleJoinEvent(selectedEvent.id, selectedEvent.title);
+                      setShowEventModal(false);
+                    }}
+                    className={`px-8 py-3 rounded-lg text-lg font-medium transition-colors ${
+                      selectedEvent.user_registered
+                        ? 'bg-green-500 hover:bg-red-500 text-white'
+                        : 'bg-blue-500 hover:bg-blue-600 text-white'
+                    }`}
+                  >
+                    {selectedEvent.user_registered ? 'Registered - Click to Unregister' : "Join This Event"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

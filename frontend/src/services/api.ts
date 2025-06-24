@@ -127,6 +127,30 @@ export interface BenefitsByCategory {
   benefits: Benefit[];
 }
 
+export interface RideEvent {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  location: string;
+  price: number;
+  duration: string;
+  difficulty: string;
+  requirements: string;
+  max_participants: number;
+  organizer_name: string;
+  status: string;
+  photos: string[];
+  current_joined: number;
+  is_upcoming: boolean;
+  is_past: boolean;
+  can_join: boolean;
+  user_registered: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export const apiService = {
   // Fetch zones
   async fetchZones(): Promise<Zone[]> {
@@ -390,6 +414,88 @@ export const apiService = {
 
     if (!response.ok) {
       throw new Error('Failed to fetch benefit usage');
+    }
+
+    return response.json();
+  },
+
+  // Event-related methods
+  async fetchEvents(): Promise<RideEvent[]> {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_BASE_URL}/events/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch events');
+    }
+
+    return response.json();
+  },
+
+  async fetchUpcomingEvents(): Promise<RideEvent[]> {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_BASE_URL}/events/upcoming/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch upcoming events');
+    }
+
+    return response.json();
+  },
+
+  async fetchPastEvents(): Promise<RideEvent[]> {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_BASE_URL}/events/past/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch past events');
+    }
+
+    return response.json();
+  },
+
+  async joinEvent(eventId: number): Promise<{ message: string }> {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_BASE_URL}/events/${eventId}/join/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || errorData.detail || 'Failed to join event');
+    }
+
+    return response.json();
+  },
+
+  async leaveEvent(eventId: number): Promise<{ message: string }> {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_BASE_URL}/events/${eventId}/leave/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || errorData.detail || 'Failed to leave event');
     }
 
     return response.json();

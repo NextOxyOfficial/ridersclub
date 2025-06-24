@@ -38,14 +38,37 @@ class RideEventSerializer(serializers.ModelSerializer):
     organizer = RiderSerializer(read_only=True)
     participants = RiderSerializer(many=True, read_only=True)
     participant_count = serializers.SerializerMethodField()
+    current_joined = serializers.ReadOnlyField()
+    is_upcoming = serializers.ReadOnlyField()
+    is_past = serializers.ReadOnlyField()
+    can_join = serializers.SerializerMethodField()
+    user_registered = serializers.SerializerMethodField()
 
     class Meta:
         model = RideEvent
-        fields = ['id', 'title', 'description', 'location', 'date', 'organizer', 
-                 'participants', 'participant_count', 'max_participants', 'created_at', 'updated_at']
+        fields = ['id', 'title', 'description', 'location', 'date', 'time', 'end_date', 
+                 'price', 'duration', 'difficulty', 'requirements', 'status', 'organizer', 
+                 'organizer_name', 'participants', 'participant_count', 'current_joined', 
+                 'max_participants', 'photos', 'is_featured', 'is_upcoming', 'is_past', 
+                 'can_join', 'user_registered', 'created_at', 'updated_at']
 
     def get_participant_count(self, obj):
         return obj.participants.count()
+    
+    def get_can_join(self, obj):
+        """Check if user can join this event"""
+        if not obj.is_upcoming:
+            return False
+        if obj.current_joined >= obj.max_participants:
+            return False
+        return True
+    
+    def get_user_registered(self, obj):
+        """Check if current user is registered for this event"""
+        request = self.context.get('request')
+        if request and hasattr(request.user, 'rider'):
+            return obj.participants.filter(id=request.user.rider.id).exists()
+        return False
 
 class PostSerializer(serializers.ModelSerializer):
     author = RiderSerializer(read_only=True)

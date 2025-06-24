@@ -129,32 +129,105 @@ class RideEventViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        return RideEvent.objects.select_related('organizer__user').prefetch_related('participants__user')
+        queryset = RideEvent.objects.select_related('organizer__user').prefetch_related('participants__user')
+        
+        # Filter by status
+        status_filter = self.request.query_params.get('status', None)
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        # Filter by upcoming/past
+        event_type = self.request.query_params.get('type', None)
+        if event_type == 'upcoming':
+            from django.utils import timezone
+            today = timezone.now().date()
+            queryset = queryset.filter(date__gte=today, status='upcoming')
+        elif event_type == 'past':
+            from django.utils import timezone
+            today = timezone.now().date()
+            queryset = queryset.filter(
+                models.Q(date__lt=today) | models.Q(status='completed')
+            )
+        
+        return queryset
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    @action(detail=False, methods=['get'])
+    def upcoming(self, request):
+        """Get upcoming events"""
+        from django.utils import timezone
+        today = timezone.now().date()
+        events = RideEvent.objects.filter(
+            date__gte=today, 
+            status='upcoming'
+        ).select_related('organizer__user').prefetch_related('participants__user')
+        
+        serializer = self.get_serializer(events, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def past(self, request):
+        """Get past/completed events"""
+        from django.utils import timezone
+        today = timezone.now().date()
+        events = RideEvent.objects.filter(
+            models.Q(date__lt=today) | models.Q(status='completed')
+        ).select_related('organizer__user').prefetch_related('participants__user')
+        
+        serializer = self.get_serializer(events, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def join(self, request, pk=None):
         event = self.get_object()
+        
+        # Check if user has a rider profile
+        if not hasattr(request.user, 'rider'):
+            return Response({'error': 'Rider profile required'}, status=status.HTTP_400_BAD_REQUEST)
+        
         rider = request.user.rider
         
+        # Check if event is upcoming
+        if not event.is_upcoming:
+            return Response({'error': 'Cannot join past or non-upcoming events'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check capacity
         if event.participants.count() >= event.max_participants:
             return Response({'error': 'Event is full'}, status=status.HTTP_400_BAD_REQUEST)
         
+        # Check if already joined
         if rider in event.participants.all():
             return Response({'error': 'Already joined this event'}, status=status.HTTP_400_BAD_REQUEST)
         
         event.participants.add(rider)
-        return Response({'message': 'Successfully joined the event'})
+        return Response({
+            'message': 'Successfully joined the event',
+            'current_joined': event.current_joined
+        })
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def leave(self, request, pk=None):
         event = self.get_object()
+        
+        # Check if user has a rider profile
+        if not hasattr(request.user, 'rider'):
+            return Response({'error': 'Rider profile required'}, status=status.HTTP_400_BAD_REQUEST)
+        
         rider = request.user.rider
         
+        # Check if joined
         if rider not in event.participants.all():
             return Response({'error': 'Not joined this event'}, status=status.HTTP_400_BAD_REQUEST)
         
         event.participants.remove(rider)
-        return Response({'message': 'Successfully left the event'})
+        return Response({
+            'message': 'Successfully left the event',
+            'current_joined': event.current_joined
+        })
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()

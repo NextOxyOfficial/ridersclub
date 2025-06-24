@@ -113,18 +113,57 @@ class Rider(models.Model):
         return f"{self.user.username} - {self.bike_model}"
 
 class RideEvent(models.Model):
+    STATUS_CHOICES = [
+        ('upcoming', 'Upcoming'),
+        ('ongoing', 'Ongoing'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    DIFFICULTY_CHOICES = [
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),        ('expert', 'Expert'),
+    ]
+    
     title = models.CharField(max_length=200)
     description = models.TextField()
     location = models.CharField(max_length=200)
-    date = models.DateTimeField()
+    date = models.DateField()
+    time = models.TimeField()
+    end_date = models.DateTimeField(blank=True, null=True, help_text="For multi-day events")
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Event price in BDT")
+    duration = models.CharField(max_length=100, blank=True, help_text="Event duration (e.g., '3 hours', '3 days, 2 nights')")
+    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default='beginner')
+    requirements = models.TextField(blank=True, help_text="Requirements for the event")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='upcoming')
     organizer = models.ForeignKey(Rider, on_delete=models.CASCADE, related_name='organized_events')
+    organizer_name = models.CharField(max_length=200, blank=True, help_text="Organization/team name (e.g., 'Dhaka Zone Team')")
     participants = models.ManyToManyField(Rider, related_name='joined_events', blank=True)
     max_participants = models.IntegerField(default=20)
+    photos = models.JSONField(default=list, blank=True, help_text="List of photo URLs for completed events")
+    is_featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
+    
+    @property
+    def current_joined(self):
+        return self.participants.count()
+    
+    @property
+    def is_upcoming(self):
+        from django.utils import timezone
+        today = timezone.now().date()
+        return self.date >= today and self.status == 'upcoming'
+    
+    @property
+    def is_past(self):
+        from django.utils import timezone
+        today = timezone.now().date()
+        return self.date < today or self.status == 'completed'
 
     class Meta:
         ordering = ['date']
