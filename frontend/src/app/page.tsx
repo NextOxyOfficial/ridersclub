@@ -32,8 +32,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">{/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 p-6 bg-slate-900/70 backdrop-blur-lg border-b border-white/10">          
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
+      <nav className="fixed top-0 left-0 right-0 z-50 p-6 bg-slate-900/70 backdrop-blur-lg border-b border-white/10">            <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="group cursor-pointer">
             <div className="relative">
               <div className="text-white font-black text-2xl tracking-wider bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent transform transition-all duration-300 hover:scale-110 hover:rotate-1">
@@ -42,8 +41,8 @@ export default function Home() {
               <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-300"></div>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 rounded-lg opacity-0 group-hover:opacity-20 transition duration-300"></div>
             </div>
-          </div>              <div className="space-x-4">
-            
+          </div>              
+          <div className="flex items-center space-x-4">            
             {isLoggedIn && user ? (
               <span className="text-white font-medium py-2 px-4">
                 Hi, {user.full_name}
@@ -55,7 +54,7 @@ export default function Home() {
               >
                 Join Club
               </Link>
-            )}
+            )}            
             {isLoggedIn ? (
               <Link
                 href="/dashboard"
@@ -70,6 +69,24 @@ export default function Home() {
               >
                 Login
               </Link>
+            )}
+            
+            {isLoggedIn && (
+              <button
+                onClick={() => {
+                  localStorage.removeItem('access_token');
+                  localStorage.removeItem('refresh_token');
+                  setIsLoggedIn(false);
+                  setUser(null);
+                  window.location.reload();
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-3 rounded-lg transition-colors flex items-center"
+                title="Logout"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </button>
             )}
           </div>
         </div>
