@@ -413,13 +413,14 @@ export default function DashboardPage() {
                       </span>
                     </div>
                   </div>
-                  
-                  {/* Ongoing Events */}
+                    {/* Ongoing Events */}
                   {ongoingEvents.length > 0 && (
                     <div className="mb-6">
                       <h4 className="text-lg font-semibold text-red-400 mb-3 flex items-center">
-                        <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse mr-2"></div>
-                        Happening Now
+                        <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-lg font-medium mr-2 animate-pulse">
+                          LIVE
+                        </div>
+                        Events
                       </h4>
                       <div className="space-y-3">
                         {ongoingEvents.map((event, index) => (
