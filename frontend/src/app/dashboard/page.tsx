@@ -61,24 +61,43 @@ export default function DashboardPage() {
         window.open(websiteUrl, '_blank');
       }
     }  };  const handleJoinEvent = async (eventId: string, eventName: string) => {
-    // Immediately register the user (no loading state)
-    setRegisteredEvents(prev => new Set(prev).add(eventId));
-    
-    try {
-      // Here you would make the actual API call to join the event
-      // await apiService.joinEvent(eventId);
-      
-      console.log(`Successfully registered for event: ${eventName}`);
-      
-      // Event stays in registered state
-    } catch (error) {
-      console.error('Error registering for event:', error);
-      // Remove from registered state on error
+    // Check if already registered, if so unregister
+    if (registeredEvents.has(eventId)) {
+      // Immediately unregister the user
       setRegisteredEvents(prev => {
         const newSet = new Set(prev);
         newSet.delete(eventId);
         return newSet;
       });
+      
+      try {
+        // Here you would make the actual API call to leave the event
+        // await apiService.leaveEvent(eventId);
+        
+        console.log(`Successfully unregistered from event: ${eventName}`);
+      } catch (error) {
+        console.error('Error unregistering from event:', error);
+        // Add back to registered state on error
+        setRegisteredEvents(prev => new Set(prev).add(eventId));
+      }
+    } else {
+      // Immediately register the user
+      setRegisteredEvents(prev => new Set(prev).add(eventId));
+      
+      try {
+        // Here you would make the actual API call to join the event
+        // await apiService.joinEvent(eventId);
+        
+        console.log(`Successfully registered for event: ${eventName}`);
+      } catch (error) {
+        console.error('Error registering for event:', error);
+        // Remove from registered state on error
+        setRegisteredEvents(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(eventId);
+          return newSet;
+        });
+      }
     }
   };
 
@@ -339,10 +358,9 @@ export default function DashboardPage() {
                             <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">🎫 Free</span>
                           </div>                        </div>                        <button 
                           onClick={() => handleJoinEvent('dhaka-night-ride', 'Dhaka Night Ride')}
-                          disabled={registeredEvents.has('dhaka-night-ride')}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                             registeredEvents.has('dhaka-night-ride')
-                              ? 'bg-green-500 text-white cursor-default'
+                              ? 'bg-green-500 hover:bg-red-500 text-white'
                               : 'bg-blue-500 hover:bg-blue-600 text-white'
                           }`}
                         >
@@ -371,10 +389,9 @@ export default function DashboardPage() {
                             <span className="bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded-full">🎫 ৳500</span>
                           </div>                        </div>                        <button 
                           onClick={() => handleJoinEvent('safety-workshop', 'Safety Workshop')}
-                          disabled={registeredEvents.has('safety-workshop')}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                             registeredEvents.has('safety-workshop')
-                              ? 'bg-green-500 text-white cursor-default'
+                              ? 'bg-green-500 hover:bg-red-500 text-white'
                               : 'bg-emerald-500 hover:bg-emerald-600 text-white'
                           }`}
                         >
@@ -403,10 +420,9 @@ export default function DashboardPage() {
                             <span className="bg-red-500/30 text-red-300 px-2 py-1 rounded-full">🎫 ৳15,000</span>
                           </div>                        </div>                        <button 
                           onClick={() => handleJoinEvent('coxs-bazar-tour', "Cox's Bazar Tour")}
-                          disabled={registeredEvents.has('coxs-bazar-tour')}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                             registeredEvents.has('coxs-bazar-tour')
-                              ? 'bg-green-500 text-white cursor-default'
+                              ? 'bg-green-500 hover:bg-red-500 text-white'
                               : 'bg-orange-500 hover:bg-orange-600 text-white'
                           }`}
                         >
