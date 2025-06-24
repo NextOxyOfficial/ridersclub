@@ -114,11 +114,11 @@ def user_profile_view(request):
         membership_status = 'pending'
         zone = None
         rider = None
-    
-    # Try to get additional details from MembershipApplication
+      # Try to get additional details from MembershipApplication
     blood_group = None
     bike_info = None
     address = None
+    profile_photo_url = None
     
     try:
         application = MembershipApplication.objects.get(user=user)
@@ -126,6 +126,9 @@ def user_profile_view(request):
         if application.has_motorbike and application.motorcycle_brand and application.motorcycle_model:
             bike_info = f"{application.motorcycle_brand} {application.motorcycle_model}"
         address = application.address
+        # Get profile photo from application
+        if application.profile_photo:
+            profile_photo_url = request.build_absolute_uri(application.profile_photo.url)
     except MembershipApplication.DoesNotExist:
         pass
     
@@ -133,7 +136,10 @@ def user_profile_view(request):
     if not bike_info and rider and rider.bike_model:
         bike_info = rider.bike_model
     if not address and rider and rider.location:
-        address = rider.location    # Prepare response data
+        address = rider.location
+    # Get profile image from rider if not found in application
+    if not profile_photo_url and rider and rider.profile_image:
+        profile_photo_url = request.build_absolute_uri(rider.profile_image.url)    # Prepare response data
     response_data = {
         'id': user.id,
         'phone': user.username,
@@ -145,6 +151,7 @@ def user_profile_view(request):
         } if zone else None,
         'blood_group': blood_group,
         'custom_user_type': rider.custom_user_type if rider else None,
+        'profile_photo': profile_photo_url,
     }
     
     # Only include motorcycle if it has data
@@ -256,13 +263,21 @@ def update_profile_view(request):
             application.save()
     except MembershipApplication.DoesNotExist:
         pass
-      # Return updated profile data    # Get blood group from MembershipApplication
+      # Return updated profile data    # Get blood group and profile photo from MembershipApplication
     blood_group = None
+    profile_photo_url = None
     try:
         application = MembershipApplication.objects.get(user=user)
         blood_group = application.blood_group
+        # Get profile photo from application
+        if application.profile_photo:
+            profile_photo_url = request.build_absolute_uri(application.profile_photo.url)
     except MembershipApplication.DoesNotExist:
         pass
+    
+    # Get profile image from rider if not found in application
+    if not profile_photo_url and rider and rider.profile_image:
+        profile_photo_url = request.build_absolute_uri(rider.profile_image.url)
      
     response_data = {
         'id': user.id,
@@ -276,6 +291,7 @@ def update_profile_view(request):
         'blood_group': blood_group,
         'bike_model': rider.bike_model,
         'custom_user_type': rider.custom_user_type,
+        'profile_photo': profile_photo_url,
     }
     
     return Response({
