@@ -2,14 +2,32 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { apiService } from '../services/api';
+import { apiService, UserProfile } from '../services/api';
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    // Check if user is logged in using the API service
-    setIsLoggedIn(apiService.isAuthenticated());
+    const checkAuthAndFetchUser = async () => {
+      // Check if user is logged in using the API service
+      const authenticated = apiService.isAuthenticated();
+      setIsLoggedIn(authenticated);
+      
+      if (authenticated) {
+        try {
+          const userProfile = await apiService.getCurrentUser();
+          setUser(userProfile);
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+          // If there's an error fetching user data, they might not be properly logged in
+          setIsLoggedIn(false);
+          setUser(null);
+        }
+      }
+    };
+
+    checkAuthAndFetchUser();
   }, []);
 
   return (
@@ -26,12 +44,18 @@ export default function Home() {
             </div>
           </div>              <div className="space-x-4">
             
-            <Link
-              href="/join"
-              className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              Join Club
-            </Link>
+            {isLoggedIn && user ? (
+              <span className="text-white font-medium py-2 px-4">
+                Hi, {user.full_name}
+              </span>
+            ) : (
+              <Link
+                href="/join"
+                className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Join Club
+              </Link>
+            )}
             {isLoggedIn ? (
               <Link
                 href="/dashboard"
