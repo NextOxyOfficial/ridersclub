@@ -295,11 +295,18 @@ export default function BenefitsPage() {
               All content, logos, and designs are protected by copyright and other intellectual property laws. 
               Unauthorized reproduction or distribution is strictly prohibited.
             </p>
-          </div>
-
-          {/* Developer Credit */}
+          </div>          {/* Developer Credit */}
           <div className="text-xs text-gray-500 pt-4 border-t border-white/5">
-            <p>Developed and maintained by Lyricz Motors</p>
+            <p className="flex flex-col sm:flex-row items-center justify-center text-center">
+              <span className="flex items-center">
+                Developed with love 
+                <svg className="w-3 h-3 mx-1 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                </svg>
+                by
+              </span>
+              <span className="sm:ml-1">Lyricz Softwares & Technology Limited</span>
+            </p>
           </div>
         </div>
       </footer>
