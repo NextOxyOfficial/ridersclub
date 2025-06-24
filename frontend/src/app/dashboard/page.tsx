@@ -551,11 +551,9 @@ export default function DashboardPage() {
                               <h4 className="text-white font-bold text-lg">Chittagong Hill Ride</h4>
                               <p className="text-purple-300 text-sm">November 28, 2024 • Completed</p>
                             </div>
-                          </div>
-                          <p className="text-gray-300 text-sm mb-2">Amazing hill track adventure with scenic views and challenging routes.</p>
+                          </div>                          <p className="text-gray-300 text-sm mb-2">Amazing hill track adventure with scenic views and challenging routes.</p>
                           <div className="flex items-center space-x-4 text-xs">
                             <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">✅ 45 Riders</span>
-                            <span className="bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded-full">⭐ 4.8/5 Rating</span>
                           </div>
                         </div>
                       </div>
@@ -572,11 +570,9 @@ export default function DashboardPage() {
                               <h4 className="text-white font-bold text-lg">Maintenance Workshop</h4>
                               <p className="text-teal-300 text-sm">October 20, 2024 • Completed</p>
                             </div>
-                          </div>
-                          <p className="text-gray-300 text-sm mb-2">Hands-on motorcycle maintenance and repair workshop for all skill levels.</p>
+                          </div>                          <p className="text-gray-300 text-sm mb-2">Hands-on motorcycle maintenance and repair workshop for all skill levels.</p>
                           <div className="flex items-center space-x-4 text-xs">
                             <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">✅ 80 Participants</span>
-                            <span className="bg-orange-500/30 text-orange-300 px-2 py-1 rounded-full">🔧 Practical Session</span>
                           </div>
                         </div>
                       </div>
