@@ -9,9 +9,8 @@ export default function DashboardPage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [passwordData, setPasswordData] = useState<ChangePasswordData>({
-    current_password: '',
+  const [showPasswordModal, setShowPasswordModal] = useState(false);  const [passwordData, setPasswordData] = useState<ChangePasswordData & { confirm_password: string }>({
+    old_password: '',
     new_password: '',
     confirm_password: '',
   });
@@ -70,13 +69,14 @@ export default function DashboardPage() {
       return;
     }
 
-    setIsChangingPassword(true);
-
-    try {
-      await apiService.changePassword(passwordData);
+    setIsChangingPassword(true);    try {
+      await apiService.changePassword({
+        old_password: passwordData.old_password,
+        new_password: passwordData.new_password,
+      });
       setPasswordSuccess('Password changed successfully!');
       setPasswordData({
-        current_password: '',
+        old_password: '',
         new_password: '',
         confirm_password: '',
       });
@@ -346,14 +346,13 @@ export default function DashboardPage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20 max-w-md w-full">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">Change Password</h2>
-              <button
+              <h2 className="text-2xl font-bold text-white">Change Password</h2>              <button
                 onClick={() => {
                   setShowPasswordModal(false);
                   setPasswordError('');
                   setPasswordSuccess('');
                   setPasswordData({
-                    current_password: '',
+                    old_password: '',
                     new_password: '',
                     confirm_password: '',
                   });
@@ -370,11 +369,10 @@ export default function DashboardPage() {
               <div>
                 <label className="block text-white font-medium mb-2">
                   Current Password
-                </label>
-                <input
+                </label>                <input
                   type="password"
-                  name="current_password"
-                  value={passwordData.current_password}
+                  name="old_password"
+                  value={passwordData.old_password}
                   onChange={handlePasswordInputChange}
                   className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Enter current password"
@@ -436,13 +434,12 @@ export default function DashboardPage() {
 
               <div className="flex space-x-4">
                 <button
-                  type="button"
-                  onClick={() => {
+                  type="button"                  onClick={() => {
                     setShowPasswordModal(false);
                     setPasswordError('');
                     setPasswordSuccess('');
                     setPasswordData({
-                      current_password: '',
+                      old_password: '',
                       new_password: '',
                       confirm_password: '',
                     });
