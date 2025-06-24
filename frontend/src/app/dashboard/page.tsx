@@ -538,10 +538,8 @@ export default function DashboardPage() {
                           </div>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="bg-gradient-to-r from-purple-500/20 to-indigo-500/20 backdrop-blur-sm rounded-2xl p-4 border border-purple-400/30">
-                      <div className="flex items-center justify-between">
+                    </div>                    <div className="bg-gradient-to-r from-purple-500/20 to-indigo-500/20 backdrop-blur-sm rounded-2xl p-4 border border-purple-400/30">
+                      <div className="flex items-center">
                         <div className="flex-1">
                           <div className="flex items-center mb-2">
                             <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-indigo-600 rounded-xl flex items-center justify-center mr-3">
@@ -560,14 +558,9 @@ export default function DashboardPage() {
                             <span className="bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded-full">⭐ 4.8/5 Rating</span>
                           </div>
                         </div>
-                        <button className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                          View Details
-                        </button>
                       </div>
-                    </div>
-
-                    <div className="bg-gradient-to-r from-teal-500/20 to-cyan-500/20 backdrop-blur-sm rounded-2xl p-4 border border-teal-400/30">
-                      <div className="flex items-center justify-between">
+                    </div>                    <div className="bg-gradient-to-r from-teal-500/20 to-cyan-500/20 backdrop-blur-sm rounded-2xl p-4 border border-teal-400/30">
+                      <div className="flex items-center">
                         <div className="flex-1">
                           <div className="flex items-center mb-2">
                             <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-cyan-600 rounded-xl flex items-center justify-center mr-3">
@@ -586,9 +579,6 @@ export default function DashboardPage() {
                             <span className="bg-orange-500/30 text-orange-300 px-2 py-1 rounded-full">🔧 Practical Session</span>
                           </div>
                         </div>
-                        <button className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                          View Summary
-                        </button>
                       </div>
                     </div>
                   </div>
