@@ -11,6 +11,7 @@ export default function DashboardPage() {
   const [benefitsLoading, setBenefitsLoading] = useState(true);
   const [events, setEvents] = useState<RideEvent[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<RideEvent[]>([]);
+  const [ongoingEvents, setOngoingEvents] = useState<RideEvent[]>([]);
   const [pastEvents, setPastEvents] = useState<RideEvent[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -44,11 +45,12 @@ export default function DashboardPage() {
         setUser(userProfile);
         setBenefits(allBenefits); // Show all benefits
         setEvents(allEvents);
-        
-        // Separate upcoming and past events
-        const upcoming = allEvents.filter(event => event.is_upcoming);
+          // Separate ongoing, upcoming and past events
+        const ongoing = allEvents.filter(event => event.status === 'ongoing');
+        const upcoming = allEvents.filter(event => event.is_upcoming && event.status !== 'ongoing');
         const past = allEvents.filter(event => event.is_past);
         
+        setOngoingEvents(ongoing);
         setUpcomingEvents(upcoming);
         setPastEvents(past);
         
@@ -108,8 +110,15 @@ export default function DashboardPage() {
               : e
           )
         );
+          setUpcomingEvents(prevEvents => 
+          prevEvents.map(e => 
+            e.id === eventId 
+              ? { ...e, user_registered: false, current_joined: e.current_joined - 1 }
+              : e
+          )
+        );
         
-        setUpcomingEvents(prevEvents => 
+        setOngoingEvents(prevEvents => 
           prevEvents.map(e => 
             e.id === eventId 
               ? { ...e, user_registered: false, current_joined: e.current_joined - 1 }
@@ -130,8 +139,15 @@ export default function DashboardPage() {
               : e
           )
         );
+          setUpcomingEvents(prevEvents => 
+          prevEvents.map(e => 
+            e.id === eventId 
+              ? { ...e, user_registered: true, current_joined: e.current_joined + 1 }
+              : e
+          )
+        );
         
-        setUpcomingEvents(prevEvents => 
+        setOngoingEvents(prevEvents => 
           prevEvents.map(e => 
             e.id === eventId 
               ? { ...e, user_registered: true, current_joined: e.current_joined + 1 }
@@ -250,11 +266,13 @@ export default function DashboardPage() {
             <Link href="/login" className="inline-block mt-4 bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
               Back to Login
             </Link>
+          </div>        
           </div>
-        </div>
       </div>
     );
-  }  return (
+  }
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900">
       {/* Mobile App Header */}
       <div className="sticky top-0 z-50 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 backdrop-blur-xl border-b border-purple-500/30">
@@ -386,115 +404,183 @@ export default function DashboardPage() {
             {/* Tab Content */}
             <div className="min-h-[200px]">
               {activeEventTab === 'upcoming' && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between mb-4">
+                <div className="space-y-4">                  <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold text-white">Upcoming Events</h3>
                     <div className="flex items-center space-x-1">
                       <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                      <span className="text-blue-400 text-xs font-medium">3 Events Scheduled</span>
+                      <span className="text-blue-400 text-xs font-medium">
+                        {ongoingEvents.length + upcomingEvents.length} Events Available
+                      </span>
                     </div>
                   </div>
-                    {/* Upcoming Events */}
-                  {eventsLoading ? (
-                    <div className="space-y-3">
-                      <div className="bg-gray-500/20 backdrop-blur-sm rounded-2xl p-4 border border-gray-400/30 animate-pulse">
-                        <div className="h-4 bg-gray-400 rounded w-3/4 mb-2"></div>
-                        <div className="h-3 bg-gray-400 rounded w-1/2"></div>
-                      </div>
-                    </div>
-                  ) : upcomingEvents.length > 0 ? (
-                    <div className="space-y-3">
-                      {upcomingEvents.map((event, index) => (
-                        <div key={event.id} className={`bg-gradient-to-r ${
-                          index % 3 === 0 ? 'from-blue-500/20 to-purple-500/20 border-blue-400/30' :
-                          index % 3 === 1 ? 'from-emerald-500/20 to-green-500/20 border-emerald-400/30' :
-                          'from-orange-500/20 to-red-500/20 border-orange-400/30'
-                        } backdrop-blur-sm rounded-2xl p-4 border`}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center mb-2">
-                                <div className={`w-10 h-10 bg-gradient-to-br ${
-                                  index % 3 === 0 ? 'from-blue-400 to-blue-600' :
-                                  index % 3 === 1 ? 'from-emerald-400 to-emerald-600' :
-                                  'from-orange-400 to-red-500'
-                                } rounded-xl flex items-center justify-center mr-3`}>
-                                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                  </svg>
+                  
+                  {/* Ongoing Events */}
+                  {ongoingEvents.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="text-lg font-semibold text-red-400 mb-3 flex items-center">
+                        <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse mr-2"></div>
+                        Happening Now
+                      </h4>
+                      <div className="space-y-3">
+                        {ongoingEvents.map((event, index) => (
+                          <div key={event.id} className="bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-sm rounded-2xl p-4 border border-red-400/30 relative overflow-hidden">
+                            {/* Ongoing indicator */}
+                            <div className="absolute top-0 left-0 bg-red-500 text-white text-xs px-2 py-1 rounded-br-lg font-medium">
+                              LIVE
+                            </div>
+                            <div className="flex items-center justify-between mt-2">
+                              <div className="flex-1">
+                                <div className="flex items-center mb-2">
+                                  <div className="w-10 h-10 bg-gradient-to-br from-red-400 to-red-600 rounded-xl flex items-center justify-center mr-3">
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    </svg>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-white font-bold text-lg">{event.title}</h4>
+                                    <p className="text-red-300 text-sm">
+                                      {event.date} • {event.time}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <h4 className="text-white font-bold text-lg">{event.title}</h4>
-                                  <p className={`${
-                                    index % 3 === 0 ? 'text-blue-300' :
-                                    index % 3 === 1 ? 'text-emerald-300' :
-                                    'text-orange-300'
-                                  } text-sm`}>
-                                    {event.date} • {event.time}
-                                  </p>
+                                <p className="text-gray-300 text-sm mb-2">{event.description}</p>
+                                <div className="flex items-center space-x-4 text-xs">
+                                  <span className="bg-red-500/30 text-red-300 px-2 py-1 rounded-full">
+                                    📍 {event.location}
+                                  </span>
+                                  <span className={`${
+                                    event.price === 0 ? 'bg-green-500/30 text-green-300' : 'bg-yellow-500/30 text-yellow-300'
+                                  } px-2 py-1 rounded-full`}>
+                                    🎫 {event.price === 0 ? 'Free' : `৳${event.price}`}
+                                  </span>
                                 </div>
-                              </div>
-                              <p className="text-gray-300 text-sm mb-2">{event.description}</p>
-                              <div className="flex items-center space-x-4 text-xs">
-                                <span className={`${
-                                  index % 3 === 0 ? 'bg-blue-500/30 text-blue-300' :
-                                  index % 3 === 1 ? 'bg-emerald-500/30 text-emerald-300' :
-                                  'bg-orange-500/30 text-orange-300'
-                                } px-2 py-1 rounded-full`}>
-                                  📍 {event.location}
-                                </span>
-                                <span className={`${
-                                  event.price === 0 ? 'bg-green-500/30 text-green-300' : 'bg-yellow-500/30 text-yellow-300'
-                                } px-2 py-1 rounded-full`}>
-                                  🎫 {event.price === 0 ? 'Free' : `৳${event.price}`}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between mt-2">
-                                <button 
-                                  onClick={() => openEventModal(event.id)}
-                                  className={`${
-                                    index % 3 === 0 ? 'text-blue-400 hover:text-blue-300' :
-                                    index % 3 === 1 ? 'text-emerald-400 hover:text-emerald-300' :
-                                    'text-orange-400 hover:text-orange-300'
-                                  } text-sm font-medium transition-colors`}
-                                >
-                                  Read More →
-                                </button>
-                                <button 
-                                  onClick={() => handleJoinEvent(event.id, event.title)}
-                                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                    event.user_registered
-                                      ? 'bg-green-500 hover:bg-red-500 text-white'
-                                      : `${
-                                          index % 3 === 0 ? 'bg-blue-500 hover:bg-blue-600' :
-                                          index % 3 === 1 ? 'bg-emerald-500 hover:bg-emerald-600' :
-                                          'bg-orange-500 hover:bg-orange-600'
-                                        } text-white`
-                                  }`}
-                                >
-                                  {event.user_registered ? 'Registered' : "I'll Join"}
-                                </button>
+                                <div className="flex items-center justify-between mt-2">
+                                  <button 
+                                    onClick={() => openEventModal(event.id)}
+                                    className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
+                                  >
+                                    Read More →
+                                  </button>
+                                  <button 
+                                    onClick={() => handleJoinEvent(event.id, event.title)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                      event.user_registered
+                                        ? 'bg-green-500 hover:bg-red-500 text-white'
+                                        : 'bg-red-500 hover:bg-red-600 text-white'
+                                    }`}
+                                  >
+                                    {event.user_registered ? 'Registered' : "Join Now"}
+                                  </button>                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  ) : (
+                  )}                  
+                  {/* Upcoming Events */}
+                  {upcomingEvents.length > 0 && (
+                    <div>
+                      {ongoingEvents.length > 0 && (
+                        <h4 className="text-lg font-semibold text-blue-400 mb-3 flex items-center">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                          Coming Soon
+                        </h4>
+                      )}
+                      <div className="space-y-3">
+                        {upcomingEvents.map((event, index) => (
+                          <div key={event.id} className={`bg-gradient-to-r ${
+                            index % 3 === 0 ? 'from-blue-500/20 to-purple-500/20 border-blue-400/30' :
+                            index % 3 === 1 ? 'from-emerald-500/20 to-green-500/20 border-emerald-400/30' :
+                            'from-orange-500/20 to-red-500/20 border-orange-400/30'
+                          } backdrop-blur-sm rounded-2xl p-4 border`}>
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center mb-2">
+                                  <div className={`w-10 h-10 bg-gradient-to-br ${
+                                    index % 3 === 0 ? 'from-blue-400 to-blue-600' :
+                                    index % 3 === 1 ? 'from-emerald-400 to-emerald-600' :
+                                    'from-orange-400 to-red-500'
+                                  } rounded-xl flex items-center justify-center mr-3`}>
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    </svg>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-white font-bold text-lg">{event.title}</h4>
+                                    <p className={`${
+                                      index % 3 === 0 ? 'text-blue-300' :
+                                      index % 3 === 1 ? 'text-emerald-300' :
+                                      'text-orange-300'
+                                    } text-sm`}>
+                                      {event.date} • {event.time}
+                                    </p>
+                                  </div>
+                                </div>
+                                <p className="text-gray-300 text-sm mb-2">{event.description}</p>
+                                <div className="flex items-center space-x-4 text-xs">
+                                  <span className={`${
+                                    index % 3 === 0 ? 'bg-blue-500/30 text-blue-300' :
+                                    index % 3 === 1 ? 'bg-emerald-500/30 text-emerald-300' :
+                                    'bg-orange-500/30 text-orange-300'
+                                  } px-2 py-1 rounded-full`}>
+                                    📍 {event.location}
+                                  </span>
+                                  <span className={`${
+                                    event.price === 0 ? 'bg-green-500/30 text-green-300' : 'bg-yellow-500/30 text-yellow-300'
+                                  } px-2 py-1 rounded-full`}>
+                                    🎫 {event.price === 0 ? 'Free' : `৳${event.price}`}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between mt-2">
+                                  <button 
+                                    onClick={() => openEventModal(event.id)}
+                                    className={`${
+                                      index % 3 === 0 ? 'text-blue-400 hover:text-blue-300' :
+                                      index % 3 === 1 ? 'text-emerald-400 hover:text-emerald-300' :
+                                      'text-orange-400 hover:text-orange-300'
+                                    } text-sm font-medium transition-colors`}
+                                  >
+                                    Read More →
+                                  </button>
+                                  <button 
+                                    onClick={() => handleJoinEvent(event.id, event.title)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                      event.user_registered
+                                        ? 'bg-green-500 hover:bg-red-500 text-white'
+                                        : `${
+                                            index % 3 === 0 ? 'bg-blue-500 hover:bg-blue-600' :
+                                            index % 3 === 1 ? 'bg-emerald-500 hover:bg-emerald-600' :
+                                            'bg-orange-500 hover:bg-orange-600'
+                                          } text-white`
+                                    }`}
+                                  >
+                                    {event.user_registered ? 'Registered' : "I'll Join"}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No Events Message */}
+                  {ongoingEvents.length === 0 && upcomingEvents.length === 0 && !eventsLoading && (
                     <div className="text-center py-8">
                       <div className="w-16 h-16 bg-gray-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
                         </svg>
                       </div>
                       <p className="text-gray-400 text-lg">No upcoming events</p>
                       <p className="text-gray-500 text-sm">Check back later for new events!</p>
-                    </div>
-                  )}
+                    </div>                  )}
                 </div>
-              )}
-
-              {activeEventTab === 'previous' && (
-                <div className="space-y-4">                  <div className="flex items-center justify-between mb-4">
+              )}              {activeEventTab === 'previous' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold text-white">Previous Events</h3>
                     <div className="flex items-center space-x-1">
                       <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
