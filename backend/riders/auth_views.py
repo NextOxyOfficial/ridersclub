@@ -260,7 +260,7 @@ def update_profile_view(request):
         blood_group = application.blood_group
     except MembershipApplication.DoesNotExist:
         pass
-    
+     
     response_data = {
         'id': user.id,
         'phone': user.username,
