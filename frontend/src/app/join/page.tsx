@@ -400,7 +400,7 @@ export default function JoinPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-2 sm:px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
@@ -432,7 +432,7 @@ export default function JoinPage() {
         </div>        
         
         {/* Form */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20">
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 md:p-12 shadow-2xl border border-white/20">
           {/* Sticky Progress Bar */}
           <div className="sticky top-4 z-10 mb-8 bg-slate-800 rounded-lg p-4 border border-purple-500/30 shadow-lg">
             <div className="flex justify-between items-center mb-2">
