@@ -161,6 +161,22 @@ class RideEvent(models.Model):
     class Meta:
         ordering = ['date']
 
+class EventPhoto(models.Model):
+    """Model to store uploaded photos for events"""
+    event = models.ForeignKey(RideEvent, on_delete=models.CASCADE, related_name='uploaded_photos')
+    photo = models.ImageField(upload_to='event_photos/', help_text="Upload event photos")
+    caption = models.CharField(max_length=200, blank=True, help_text="Optional caption for the photo")
+    uploaded_by = models.ForeignKey(Rider, on_delete=models.SET_NULL, null=True, blank=True, help_text="Who uploaded this photo")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['uploaded_at']
+        verbose_name = "Event Photo"
+        verbose_name_plural = "Event Photos"
+    
+    def __str__(self):
+        return f"Photo for {self.event.title} - {self.uploaded_at.strftime('%Y-%m-%d')}"
+
 class Post(models.Model):
     author = models.ForeignKey(Rider, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)

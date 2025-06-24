@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Rider, RideEvent, Post, Zone, MembershipApplication, BenefitCategory, Benefit, BenefitUsage
+from .models import Rider, RideEvent, Post, Zone, MembershipApplication, BenefitCategory, Benefit, BenefitUsage, EventPhoto
 
 @admin.register(Zone)
 class ZoneAdmin(admin.ModelAdmin):
@@ -42,15 +42,43 @@ class RiderAdmin(admin.ModelAdmin):
     list_filter = ['created_at', 'location']
     search_fields = ['user__username', 'user__email', 'bike_model']
 
+class EventPhotoInline(admin.TabularInline):
+    model = EventPhoto
+    extra = 3
+    fields = ('photo', 'caption', 'uploaded_by')
+    readonly_fields = ('uploaded_at',)
+
 @admin.register(RideEvent)
 class RideEventAdmin(admin.ModelAdmin):
-    list_display = ['title', 'organizer', 'date', 'location', 'participant_count']
-    list_filter = ['date', 'location']
-    search_fields = ['title', 'organizer__user__username']
+    list_display = ['title', 'organizer', 'date', 'location', 'participant_count', 'photo_count']
+    list_filter = ['date', 'location', 'status']
+    search_fields = ['title', 'organizer__user__username', 'organizer_name']
+    inlines = [EventPhotoInline]
+    
+    fieldsets = (
+        ('Event Information', {
+            'fields': ('title', 'description', 'location', 'organizer', 'organizer_name')
+        }),
+        ('Date & Time', {
+            'fields': ('date', 'time', 'end_date', 'duration')
+        }),
+        ('Event Details', {
+            'fields': ('price', 'requirements', 'max_participants', 'status', 'is_featured')
+        }),
+        ('Legacy Photos (URLs)', {
+            'fields': ('photos',),
+            'description': 'Legacy photo URLs - use the Photos section below for file uploads',
+            'classes': ('collapse',)
+        }),
+    )
     
     def participant_count(self, obj):
         return obj.participants.count()
     participant_count.short_description = 'Participants'
+    
+    def photo_count(self, obj):
+        return obj.uploaded_photos.count()
+    photo_count.short_description = 'Uploaded Photos'
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
@@ -119,3 +147,19 @@ class BenefitUsageAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('rider__user', 'benefit')
+
+@admin.register(EventPhoto)
+class EventPhotoAdmin(admin.ModelAdmin):
+    list_display = ['event', 'caption', 'uploaded_by', 'uploaded_at']
+    list_filter = ['uploaded_at', 'event__status']
+    search_fields = ['event__title', 'caption', 'uploaded_by__user__username']
+    readonly_fields = ['uploaded_at']
+    
+    fieldsets = (
+        ('Photo Information', {
+            'fields': ('event', 'photo', 'caption')
+        }),
+        ('Upload Details', {
+            'fields': ('uploaded_by', 'uploaded_at')
+        }),
+    )

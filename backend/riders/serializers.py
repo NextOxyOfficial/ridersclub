@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Rider, RideEvent, Post, Zone, MembershipApplication, BenefitCategory, Benefit, BenefitUsage
+from .models import Rider, RideEvent, Post, Zone, MembershipApplication, BenefitCategory, Benefit, BenefitUsage, EventPhoto
 
 class ZoneSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,22 +34,40 @@ class RiderSerializer(serializers.ModelSerializer):
         model = Rider
         fields = ['id', 'user', 'bio', 'location', 'bike_model', 'profile_image', 'created_at', 'updated_at']
 
+class EventPhotoSerializer(serializers.ModelSerializer):
+    uploaded_by_name = serializers.CharField(source='uploaded_by.user.get_full_name', read_only=True)
+    photo_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = EventPhoto
+        fields = ['id', 'photo', 'photo_url', 'caption', 'uploaded_by', 'uploaded_by_name', 'uploaded_at']
+    
+    def get_photo_url(self, obj):
+        if obj.photo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.photo.url)
+            return obj.photo.url
+        return None
+
 class RideEventSerializer(serializers.ModelSerializer):
     organizer = RiderSerializer(read_only=True)
     participants = RiderSerializer(many=True, read_only=True)
+    uploaded_photos = EventPhotoSerializer(many=True, read_only=True)
     participant_count = serializers.SerializerMethodField()
     current_joined = serializers.ReadOnlyField()
     is_upcoming = serializers.ReadOnlyField()
     is_past = serializers.ReadOnlyField()
     can_join = serializers.SerializerMethodField()
     user_registered = serializers.SerializerMethodField()
+    all_photos = serializers.SerializerMethodField()
 
     class Meta:
         model = RideEvent
         fields = ['id', 'title', 'description', 'location', 'date', 'time', 'end_date', 
                  'price', 'duration', 'requirements', 'status', 'organizer', 
                  'organizer_name', 'participants', 'participant_count', 'current_joined', 
-                 'max_participants', 'photos', 'is_featured', 'is_upcoming', 'is_past', 
+                 'max_participants', 'photos', 'uploaded_photos', 'all_photos', 'is_featured', 'is_upcoming', 'is_past', 
                  'can_join', 'user_registered', 'created_at', 'updated_at']
 
     def get_participant_count(self, obj):
@@ -69,6 +87,39 @@ class RideEventSerializer(serializers.ModelSerializer):
         if request and hasattr(request.user, 'rider'):
             return obj.participants.filter(id=request.user.rider.id).exists()
         return False
+    
+    def get_all_photos(self, obj):
+        """Combine legacy photo URLs and uploaded photos"""
+        all_photos = []
+        
+        # Add legacy photo URLs
+        for url in obj.photos:
+            all_photos.append({
+                'type': 'url',
+                'url': url,
+                'caption': '',
+                'uploaded_at': None
+            })
+        
+        # Add uploaded photos
+        for photo in obj.uploaded_photos.all():
+            photo_url = None
+            if photo.photo:
+                request = self.context.get('request')
+                if request:
+                    photo_url = request.build_absolute_uri(photo.photo.url)
+                else:
+                    photo_url = photo.photo.url
+            
+            all_photos.append({
+                'type': 'upload',
+                'url': photo_url,
+                'caption': photo.caption or '',
+                'uploaded_at': photo.uploaded_at,
+                'uploaded_by': photo.uploaded_by.user.get_full_name() if photo.uploaded_by else None
+            })
+        
+        return all_photos
 
 class PostSerializer(serializers.ModelSerializer):
     author = RiderSerializer(read_only=True)

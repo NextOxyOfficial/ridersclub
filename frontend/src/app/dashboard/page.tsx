@@ -152,10 +152,9 @@ export default function DashboardPage() {
       setShowEventModal(true);
     }
   };
-
   const openPhotoModal = (eventId: number) => {
     const event = events.find(e => e.id === eventId);
-    if (event && event.photos && event.photos.length > 0) {
+    if (event && event.all_photos && event.all_photos.length > 0) {
       setSelectedEventPhotos(event);
       setShowPhotoModal(true);
     }
@@ -547,7 +546,7 @@ export default function DashboardPage() {
                                 <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">
                                   ✅ {event.current_joined} Attended
                                 </span>
-                                {event.photos && event.photos.length > 0 && (
+                                {event.all_photos && event.all_photos.length > 0 && (
                                   <span 
                                     className="bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full cursor-pointer hover:bg-blue-500/50 transition-colors" 
                                     onClick={() => openPhotoModal(event.id)}
@@ -891,26 +890,27 @@ export default function DashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {selectedEventPhotos.photos && selectedEventPhotos.photos.map((photo: string, index: number) => (
+            </div>            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {selectedEventPhotos.all_photos && selectedEventPhotos.all_photos.map((photo, index: number) => (
                 <div key={index} className="relative group overflow-hidden rounded-lg aspect-video">
                   <img
-                    src={photo}
-                    alt={`${selectedEventPhotos.title} photo ${index + 1}`}
+                    src={photo.url}
+                    alt={photo.caption || `${selectedEventPhotos.title} photo ${index + 1}`}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="absolute bottom-2 left-2 text-white text-sm font-medium">
-                      Photo {index + 1}
+                      {photo.caption || `Photo ${index + 1}`}
+                      {photo.uploaded_by && (
+                        <div className="text-xs opacity-75">by {photo.uploaded_by}</div>
+                      )}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {selectedEventPhotos.photos && selectedEventPhotos.photos.length === 0 && (
+            {(!selectedEventPhotos.all_photos || selectedEventPhotos.all_photos.length === 0) && (
               <div className="text-center text-gray-400 py-8">
                 <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />

@@ -127,6 +127,14 @@ export interface BenefitsByCategory {
   benefits: Benefit[];
 }
 
+export interface EventPhoto {
+  type: 'url' | 'upload';
+  url: string;
+  caption: string;
+  uploaded_at: string | null;
+  uploaded_by?: string | null;
+}
+
 export interface RideEvent {
   id: number;
   title: string;
@@ -141,6 +149,7 @@ export interface RideEvent {
   organizer_name: string;
   status: string;
   photos: string[];
+  all_photos: EventPhoto[];
   current_joined: number;
   is_upcoming: boolean;
   is_past: boolean;
