@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Rider, RideEvent, Post, Zone, MembershipApplication
+from .models import Rider, RideEvent, Post, Zone, MembershipApplication, BenefitCategory, Benefit, BenefitUsage
 
 class ZoneSerializer(serializers.ModelSerializer):
     class Meta:
@@ -57,3 +57,54 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_likes_count(self, obj):
         return obj.likes.count()
+
+class BenefitCategorySerializer(serializers.ModelSerializer):
+    benefits_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = BenefitCategory
+        fields = ['id', 'name', 'description', 'icon', 'color', 'is_active', 'order', 'benefits_count', 'created_at', 'updated_at']
+    
+    def get_benefits_count(self, obj):
+        return obj.benefits.filter(is_active=True).count()
+
+class BenefitSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    category_icon = serializers.CharField(source='category.icon', read_only=True)
+    category_color = serializers.CharField(source='category.color', read_only=True)
+    available_zones_list = ZoneSerializer(source='available_zones', many=True, read_only=True)
+    usage_count = serializers.SerializerMethodField()
+    is_available_in_zone = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Benefit
+        fields = [
+            'id', 'title', 'description', 'category', 'category_name', 'category_icon', 'category_color',
+            'image', 'membership_level', 'partner_name', 'partner_logo', 'discount_percentage', 
+            'discount_amount', 'contact_info', 'location', 'website_url', 'terms_conditions',
+            'valid_from', 'valid_until', 'usage_limit', 'available_zones_list', 'is_active',
+            'is_featured', 'order', 'usage_count', 'is_available_in_zone', 'created_at', 'updated_at'
+        ]
+    
+    def get_usage_count(self, obj):
+        return obj.usage_records.count()
+    
+    def get_is_available_in_zone(self, obj):
+        # Check if benefit is available in user's zone
+        request = self.context.get('request')
+        if request and hasattr(request.user, 'rider'):
+            user_zone = request.user.rider.zone
+            if not obj.available_zones.exists():  # Available in all zones
+                return True
+            return obj.available_zones.filter(id=user_zone.id).exists() if user_zone else False
+        return True  # Default for anonymous users
+
+class BenefitUsageSerializer(serializers.ModelSerializer):
+    rider_name = serializers.CharField(source='rider.user.get_full_name', read_only=True)
+    benefit_title = serializers.CharField(source='benefit.title', read_only=True)
+    partner_name = serializers.CharField(source='benefit.partner_name', read_only=True)
+    
+    class Meta:
+        model = BenefitUsage
+        fields = ['id', 'rider', 'rider_name', 'benefit', 'benefit_title', 'partner_name', 'used_at', 'notes']
+        read_only_fields = ['id', 'used_at']

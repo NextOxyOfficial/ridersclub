@@ -3,8 +3,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from django.contrib.auth.models import User
-from .models import Rider, RideEvent, Post, Zone, MembershipApplication
-from .serializers import RiderSerializer, RideEventSerializer, PostSerializer, ZoneSerializer, MembershipApplicationSerializer
+from django.utils import timezone
+from django.db import models
+from .models import Rider, RideEvent, Post, Zone, MembershipApplication, BenefitCategory, Benefit, BenefitUsage
+from .serializers import RiderSerializer, RideEventSerializer, PostSerializer, ZoneSerializer, MembershipApplicationSerializer, BenefitCategorySerializer, BenefitSerializer, BenefitUsageSerializer
 
 class ZoneViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Zone.objects.filter(is_active=True)
@@ -178,3 +180,131 @@ class PostViewSet(viewsets.ModelViewSet):
             'liked': liked,
             'likes_count': post.likes.count()
         })
+
+class BenefitCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = BenefitCategory.objects.filter(is_active=True)
+    serializer_class = BenefitCategorySerializer
+    permission_classes = [AllowAny]
+
+class BenefitViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Benefit.objects.filter(is_active=True)
+    serializer_class = BenefitSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = Benefit.objects.filter(is_active=True).select_related('category').prefetch_related('available_zones')
+        
+        # Filter by category if specified
+        category = self.request.query_params.get('category', None)
+        if category:
+            queryset = queryset.filter(category__id=category)
+        
+        # Filter by membership level if user is authenticated
+        if self.request.user.is_authenticated and hasattr(self.request.user, 'rider'):
+            membership_level = getattr(self.request.user.rider, 'membership_level', 'basic')
+            # For now, show all benefits. In future, you can implement membership levels
+            pass
+        
+        # Filter by zone if user is authenticated
+        if self.request.user.is_authenticated and hasattr(self.request.user, 'rider'):
+            user_zone = self.request.user.rider.zone
+            if user_zone:
+                # Show benefits available in user's zone or available in all zones
+                queryset = queryset.filter(
+                    models.Q(available_zones__isnull=True) | 
+                    models.Q(available_zones=user_zone)
+                ).distinct()
+        
+        # Filter by featured if specified
+        featured = self.request.query_params.get('featured', None)
+        if featured == 'true':
+            queryset = queryset.filter(is_featured=True)
+        
+        # Filter by valid date range
+        today = timezone.now().date()
+        queryset = queryset.filter(
+            models.Q(valid_from__isnull=True) | models.Q(valid_from__lte=today),
+            models.Q(valid_until__isnull=True) | models.Q(valid_until__gte=today)
+        )
+        
+        return queryset.order_by('order', '-created_at')
+
+    @action(detail=False, methods=['get'])
+    def featured(self, request):
+        """Get featured benefits"""
+        featured_benefits = self.get_queryset().filter(is_featured=True)[:6]
+        serializer = self.get_serializer(featured_benefits, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def by_category(self, request):
+        """Get benefits grouped by category"""
+        categories = BenefitCategory.objects.filter(is_active=True, benefits__is_active=True).distinct()
+        result = []
+        
+        for category in categories:
+            category_benefits = self.get_queryset().filter(category=category)[:4]
+            result.append({
+                'category': BenefitCategorySerializer(category).data,
+                'benefits': BenefitSerializer(category_benefits, many=True, context={'request': request}).data
+            })
+        
+        return Response(result)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def use_benefit(self, request, pk=None):
+        """Record benefit usage"""
+        benefit = self.get_object()
+        
+        if not hasattr(request.user, 'rider'):
+            return Response(
+                {'error': 'You must be a registered rider to use benefits'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        rider = request.user.rider
+        
+        # Check usage limit
+        if benefit.usage_limit:
+            usage_count = BenefitUsage.objects.filter(rider=rider, benefit=benefit).count()
+            if usage_count >= benefit.usage_limit:
+                return Response(
+                    {'error': f'You have already used this benefit {benefit.usage_limit} times'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # Check if benefit is still valid
+        today = timezone.now().date()
+        if benefit.valid_until and benefit.valid_until < today:
+            return Response(
+                {'error': 'This benefit has expired'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if benefit.valid_from and benefit.valid_from > today:
+            return Response(
+                {'error': 'This benefit is not yet available'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Record usage
+        usage = BenefitUsage.objects.create(
+            rider=rider,
+            benefit=benefit,
+            notes=request.data.get('notes', '')
+        )
+        
+        return Response({
+            'message': 'Benefit usage recorded successfully',
+            'usage': BenefitUsageSerializer(usage).data
+        })
+
+class BenefitUsageViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = BenefitUsage.objects.all()
+    serializer_class = BenefitUsageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if hasattr(self.request.user, 'rider'):
+            return BenefitUsage.objects.filter(rider=self.request.user.rider).select_related('benefit', 'rider__user')
+        return BenefitUsage.objects.none()

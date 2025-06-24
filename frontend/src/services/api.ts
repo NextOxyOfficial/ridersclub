@@ -63,9 +63,68 @@ export interface UserProfile {
 }
 
 export interface ChangePasswordData {
-  current_password: string;
+  old_password: string;
   new_password: string;
-  confirm_password: string;
+}
+
+export interface BenefitCategory {
+  id: number;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  is_active: boolean;
+  order: number;
+  benefits_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Benefit {
+  id: number;
+  title: string;
+  description: string;
+  category: number;
+  category_name: string;
+  category_icon: string;
+  category_color: string;
+  image?: string;
+  membership_level: string;
+  partner_name: string;
+  partner_logo?: string;
+  discount_percentage?: number;
+  discount_amount?: number;
+  contact_info: string;
+  location: string;
+  website_url?: string;
+  terms_conditions: string;
+  valid_from?: string;
+  valid_until?: string;
+  usage_limit?: number;
+  available_zones_list: Zone[];
+  is_active: boolean;
+  is_featured: boolean;
+  order: number;
+  usage_count: number;
+  is_available_in_zone: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BenefitUsage {
+  id: number;
+  rider: number;
+  rider_name: string;
+  benefit: number;
+  benefit_title: string;
+  partner_name: string;
+  used_at: string;
+  notes: string;
+}
+
+export interface BenefitsByCategory {
+  category: BenefitCategory;
+  benefits: Benefit[];
 }
 
 export const apiService = {
@@ -234,5 +293,105 @@ export const apiService = {
   // Check if user is authenticated
   isAuthenticated(): boolean {
     return !!localStorage.getItem('access_token');
+  },
+
+  // Benefit-related API functions
+  async fetchBenefitCategories(): Promise<BenefitCategory[]> {
+    const response = await fetch(`${API_BASE_URL}/benefit-categories/`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch benefit categories');
+    }
+    
+    return response.json();
+  },
+
+  async fetchBenefits(categoryId?: number, featured?: boolean): Promise<Benefit[]> {
+    let url = `${API_BASE_URL}/benefits/`;
+    const params = new URLSearchParams();
+    
+    if (categoryId) {
+      params.append('category', categoryId.toString());
+    }
+    
+    if (featured) {
+      params.append('featured', 'true');
+    }
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch benefits');
+    }
+    
+    return response.json();
+  },
+
+  async fetchFeaturedBenefits(): Promise<Benefit[]> {
+    const response = await fetch(`${API_BASE_URL}/benefits/featured/`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch featured benefits');
+    }
+    
+    return response.json();
+  },
+
+  async fetchBenefitsByCategory(): Promise<BenefitsByCategory[]> {
+    const response = await fetch(`${API_BASE_URL}/benefits/by_category/`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch benefits by category');
+    }
+    
+    return response.json();
+  },
+
+  async fetchBenefitDetails(benefitId: number): Promise<Benefit> {
+    const response = await fetch(`${API_BASE_URL}/benefits/${benefitId}/`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch benefit details');
+    }
+    
+    return response.json();
+  },
+
+  async useBenefit(benefitId: number, notes?: string): Promise<{ message: string; usage: BenefitUsage }> {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_BASE_URL}/benefits/${benefitId}/use_benefit/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ notes: notes || '' }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to use benefit');
+    }
+
+    return response.json();
+  },
+
+  async fetchMyBenefitUsage(): Promise<BenefitUsage[]> {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_BASE_URL}/benefit-usage/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch benefit usage');
+    }
+
+    return response.json();
   },
 };

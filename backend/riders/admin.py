@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Rider, RideEvent, Post, Zone, MembershipApplication
+from .models import Rider, RideEvent, Post, Zone, MembershipApplication, BenefitCategory, Benefit, BenefitUsage
 
 @admin.register(Zone)
 class ZoneAdmin(admin.ModelAdmin):
@@ -61,3 +61,61 @@ class PostAdmin(admin.ModelAdmin):
     def likes_count(self, obj):
         return obj.likes.count()
     likes_count.short_description = 'Likes'
+
+@admin.register(BenefitCategory)
+class BenefitCategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'icon', 'color', 'is_active', 'order', 'created_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['name', 'description']
+    list_editable = ['is_active', 'order']
+    ordering = ['order', 'name']
+    
+    fieldsets = (
+        ('Category Information', {
+            'fields': ('name', 'description', 'is_active', 'order')
+        }),
+        ('Display Settings', {
+            'fields': ('icon', 'color')
+        }),
+    )
+
+@admin.register(Benefit)
+class BenefitAdmin(admin.ModelAdmin):
+    list_display = ['title', 'partner_name', 'category', 'membership_level', 'discount_percentage', 'is_active', 'is_featured', 'order', 'created_at']
+    list_filter = ['category', 'membership_level', 'is_active', 'is_featured', 'available_zones', 'created_at']
+    search_fields = ['title', 'partner_name', 'description']
+    list_editable = ['is_active', 'is_featured', 'order']
+    filter_horizontal = ['available_zones']
+    ordering = ['order', '-created_at']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'description', 'category', 'image')
+        }),
+        ('Partner Information', {
+            'fields': ('partner_name', 'partner_logo', 'contact_info', 'location', 'website_url')
+        }),
+        ('Discount Details', {
+            'fields': ('discount_percentage', 'discount_amount', 'membership_level')
+        }),
+        ('Terms & Availability', {
+            'fields': ('terms_conditions', 'valid_from', 'valid_until', 'usage_limit', 'available_zones')
+        }),
+        ('Display Settings', {
+            'fields': ('is_active', 'is_featured', 'order')
+        }),
+    )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('category').prefetch_related('available_zones')
+
+@admin.register(BenefitUsage)
+class BenefitUsageAdmin(admin.ModelAdmin):
+    list_display = ['rider', 'benefit', 'used_at', 'notes']
+    list_filter = ['used_at', 'benefit__category', 'benefit__partner_name']
+    search_fields = ['rider__user__username', 'benefit__title', 'benefit__partner_name']
+    readonly_fields = ['used_at']
+    ordering = ['-used_at']
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('rider__user', 'benefit')

@@ -230,7 +230,7 @@ export default function DashboardPage() {
         </div>        
         {/* Special Offers Section */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4 px-2">
+          <div className="flex items-center justify-between mb-3 px-2">
             <h3 className="text-xl font-bold text-white">Exclusive Benefits For Rider's Club Members</h3>
             <div className="flex items-center space-x-1">
               <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>

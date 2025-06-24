@@ -1,10 +1,20 @@
+'use client';
+
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if user is logged in by checking for auth token
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    setIsLoggedIn(!!token);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Navigation */}
-      <nav className="absolute top-0 left-0 right-0 z-10 p-6">          
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">{/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 p-6 bg-slate-900/70 backdrop-blur-lg border-b border-white/10">          
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="group cursor-pointer">
             <div className="relative">
@@ -14,31 +24,45 @@ export default function Home() {
               <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-300"></div>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 rounded-lg opacity-0 group-hover:opacity-20 transition duration-300"></div>
             </div>
-          </div>
-          <div className="space-x-4">
+          </div>              <div className="space-x-4">
+            <Link
+              href="/benefits"
+              className="bg-transparent border border-purple-500/30 hover:bg-purple-600/20 text-purple-300 hover:text-white font-medium py-2 px-4 rounded-lg transition-colors"
+            >
+              Benefits
+            </Link>
             <Link
               href="/join"
               className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
             >
               Join Club
             </Link>
-            <Link
-              href="/login"
-              className="bg-transparent border border-white/30 hover:bg-white/10 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              Login
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                href="/dashboard"
+                className="bg-transparent border border-white/30 hover:bg-white/10 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="bg-transparent border border-white/30 hover:bg-white/10 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       </nav>      {/* Hero Section */}
-      <div className="flex flex-col pt-20 pb-10 items-center justify-center min-h-screen px-2 sm:px-4">
+      <div className="flex flex-col pt-20 sm:pt-32 pb-10 items-center justify-center min-h-screen px-2 sm:px-4">
         <div className="text-center mb-8 mt-8">
           <div className="relative inline-block">
-            <h1 className="text-5xl md:text-7xl font-black text-transparent bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text mb-2 drop-shadow-2xl">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-transparent bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text mb-2 drop-shadow-2xl leading-tight">
               Rider's Club Bangladesh
             </h1>
-            <div className="absolute -top-2 -right-4 md:-right-8">
-              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white pr-5 py-1 rounded-full text-xs md:text-sm font-semibold shadow-lg transform rotate-12 hover:rotate-6 transition-transform duration-300">
+            <div className="absolute -top-2 -right-4 md:-right-12">
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-2 py-1 rounded-full text-xs md:text-sm font-semibold shadow-lg transform rotate-12 hover:rotate-6 transition-transform duration-300">
                 <span className="text-purple-100">by</span> <span className="text-white font-bold">Lyricz Motors</span>
               </div>
             </div>
@@ -84,13 +108,51 @@ export default function Home() {
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
-              </div>
-              <div className="text-left">
+              </div>              <div className="text-left">
                 <div className="text-xs sm:text-sm font-semibold">Connect on</div>
                 <div className="text-xs text-orange-100">AdsyBN</div>
               </div>
             </a>
           </div></div>        
+        
+        {/* Member Benefits Section */}
+        <div className="mb-8 bg-white/5 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/10 max-sm:w-full mx-2 sm:mx-4">
+          <div className="text-center mb-6">
+            <h3 className="text-2xl font-bold text-white mb-2">🎁 Exclusive Member Benefits</h3>
+            <p className="text-gray-300">Enjoy amazing discounts and offers exclusive to our members</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-white/5 rounded-lg p-4 text-center">
+              <div className="text-3xl mb-2">🍔</div>
+              <h4 className="text-white font-semibold mb-1">Food & Dining</h4>
+              <p className="text-gray-300 text-sm">Up to 25% off at partner restaurants</p>
+            </div>
+            <div className="bg-white/5 rounded-lg p-4 text-center">
+              <div className="text-3xl mb-2">⛽</div>
+              <h4 className="text-white font-semibold mb-1">Fuel & Service</h4>
+              <p className="text-gray-300 text-sm">Special rates on fuel and bike services</p>
+            </div>
+            <div className="bg-white/5 rounded-lg p-4 text-center">
+              <div className="text-3xl mb-2">🛍️</div>
+              <h4 className="text-white font-semibold mb-1">Shopping</h4>
+              <p className="text-gray-300 text-sm">Exclusive discounts on gear and accessories</p>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <Link
+              href="/benefits"
+              className="inline-flex items-center bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
+              <span>View All Benefits</span>
+              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+          
           {/* App Download Section */}
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 md:p-12 shadow-2xl border border-white/20">
           <div className="text-center mb-8">

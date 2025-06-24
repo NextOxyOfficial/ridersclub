@@ -143,3 +143,80 @@ class Post(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+class BenefitCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    icon = models.CharField(max_length=50, help_text="CSS class for icon (e.g., 'fas fa-discount', 'fas fa-gift')")
+    color = models.CharField(max_length=7, default="#6366f1", help_text="Hex color code for category")
+    is_active = models.BooleanField(default=True)
+    order = models.IntegerField(default=0, help_text="Display order (lower numbers appear first)")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name_plural = "Benefit Categories"
+
+class Benefit(models.Model):
+    MEMBERSHIP_LEVEL_CHOICES = [
+        ('all', 'All Members'),
+        ('basic', 'Basic Members'),
+        ('premium', 'Premium Members'),
+        ('vip', 'VIP Members'),
+    ]
+
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    category = models.ForeignKey(BenefitCategory, on_delete=models.CASCADE, related_name='benefits')
+    image = models.ImageField(upload_to='benefits/', blank=True, null=True)
+    membership_level = models.CharField(max_length=20, choices=MEMBERSHIP_LEVEL_CHOICES, default='all')
+    
+    # Partner/Vendor Information
+    partner_name = models.CharField(max_length=200, blank=True)
+    partner_logo = models.ImageField(upload_to='partner_logos/', blank=True, null=True)
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="e.g., 15.50 for 15.5%")
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Fixed discount amount")
+    
+    # Contact and Location
+    contact_info = models.TextField(blank=True, help_text="Phone, email, website")
+    location = models.TextField(blank=True, help_text="Address or multiple locations")
+    website_url = models.URLField(blank=True)
+    
+    # Terms and Conditions
+    terms_conditions = models.TextField(blank=True)
+    valid_from = models.DateField(blank=True, null=True)
+    valid_until = models.DateField(blank=True, null=True)
+    usage_limit = models.IntegerField(blank=True, null=True, help_text="Maximum times a member can use this benefit")
+    
+    # Zones where benefit is available
+    available_zones = models.ManyToManyField(Zone, blank=True, help_text="Leave empty for all zones")
+    
+    # Status and Display
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False, help_text="Show in featured benefits section")
+    order = models.IntegerField(default=0, help_text="Display order (lower numbers appear first)")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.partner_name}"
+
+    class Meta:
+        ordering = ['order', '-created_at']
+
+class BenefitUsage(models.Model):
+    rider = models.ForeignKey('Rider', on_delete=models.CASCADE, related_name='benefit_usage')
+    benefit = models.ForeignKey(Benefit, on_delete=models.CASCADE, related_name='usage_records')
+    used_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True, help_text="Additional notes about usage")
+
+    def __str__(self):
+        return f"{self.rider.user.username} used {self.benefit.title}"
+
+    class Meta:
+        ordering = ['-used_at']
