@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { apiService, UserProfile, ChangePasswordData, Benefit, RideEvent, Zone, Notice } from '../../services/api';
+import { apiService, UserProfile, ChangePasswordData, Benefit, RideEvent, Zone, Notice, FeaturedRider } from '../../services/api';
 
 export default function DashboardPage() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -36,9 +36,14 @@ export default function DashboardPage() {
   });  const [profileEditError, setProfileEditError] = useState<string>('');
   const [profileEditSuccess, setProfileEditSuccess] = useState<string>('');
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
-    // Notice states
+  // Notice states
   const [notices, setNotices] = useState<Notice[]>([]);
   const [noticesLoading, setNoticesLoading] = useState(true);
+  
+  // Help & Support modal states
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [featuredRiders, setFeaturedRiders] = useState<FeaturedRider[]>([]);
+  const [featuredRidersLoading, setFeaturedRidersLoading] = useState(false);
   
   const router = useRouter();useEffect(() => {
     const checkAuth = async () => {
@@ -317,7 +322,6 @@ export default function DashboardPage() {
       setIsUpdatingProfile(false);
     }
   };
-
   const handleProfileEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setProfileEditData(prev => ({
@@ -326,7 +330,25 @@ export default function DashboardPage() {
     }));
     
     if (profileEditError) {
-      setProfileEditError('');    }  };
+      setProfileEditError('');
+    }
+  };
+
+  // Help & Support modal handler
+  const handleOpenHelpModal = async () => {
+    setShowHelpModal(true);
+    setFeaturedRidersLoading(true);
+    
+    try {
+      const riders = await apiService.fetchFeaturedRiders();
+      setFeaturedRiders(riders);
+    } catch (error) {
+      console.error('Error fetching featured riders:', error);
+      setFeaturedRiders([]); // Set empty array as fallback
+    } finally {
+      setFeaturedRidersLoading(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -932,7 +954,10 @@ export default function DashboardPage() {
           </div>
         )}        {/* Enhanced Quick Actions */}
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <button className="group bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl rounded-3xl p-6 border border-blue-400/30 hover:border-blue-400/60 transition-all hover:scale-105 shadow-lg hover:shadow-xl">
+          <button 
+            onClick={handleOpenHelpModal}
+            className="group bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl rounded-3xl p-6 border border-blue-400/30 hover:border-blue-400/60 transition-all hover:scale-105 shadow-lg hover:shadow-xl"
+          >
             <div className="text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg group-hover:scale-110 transition-transform">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1365,6 +1390,91 @@ export default function DashboardPage() {
                 </button>
               </div>
             </form>
+          </div>        </div>
+      )}
+
+      {/* Help & Support Modal */}
+      {showHelpModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">Help & Support</h2>
+              <button
+                onClick={() => setShowHelpModal(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Team Controllers
+              </h3>
+              <p className="text-gray-300 text-sm mb-4">
+                Need help? Contact our featured team controllers for assistance.
+              </p>
+
+              {featuredRidersLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <svg className="animate-spin h-8 w-8 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span className="ml-2 text-white">Loading team controllers...</span>
+                </div>
+              ) : featuredRiders.length > 0 ? (
+                <div className="grid gap-4">
+                  {featuredRiders.map((rider) => (
+                    <div key={rider.id} className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm rounded-2xl p-4 border border-purple-400/30">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          {rider.profile_photo ? (
+                            <img 
+                              src={rider.profile_photo} 
+                              alt={rider.full_name} 
+                              className="w-16 h-16 rounded-full object-cover"
+                            />
+                          ) : (
+                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-white font-semibold text-lg">{rider.full_name}</h4>
+                          {rider.custom_user_type && (
+                            <p className="text-purple-300 text-sm font-medium">{rider.custom_user_type}</p>
+                          )}
+                          {rider.zone && (
+                            <p className="text-blue-300 text-xs mt-1">{rider.zone.name}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <svg className="w-12 h-12 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <p className="text-gray-400">No team controllers available at the moment.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-xl p-4 border border-purple-400/20">
+              <h4 className="text-white font-medium mb-2">Need More Help?</h4>
+              <p className="text-gray-300 text-sm">
+                You can also reach out to us through our social media channels or contact the administrators directly.
+              </p>
+            </div>
           </div>
         </div>
       )}

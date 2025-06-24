@@ -176,6 +176,20 @@ export interface Notice {
   updated_at: string;
 }
 
+export interface FeaturedRider {
+  id: number;
+  user_id: number;
+  full_name: string;
+  custom_user_type: string;
+  profile_photo?: string | null;
+  bio: string;
+  location: string;
+  zone: {
+    id: number;
+    name: string;
+  } | null;
+}
+
 export const apiService = {
   // Fetch zones
   async fetchZones(): Promise<Zone[]> {
@@ -561,10 +575,19 @@ export const apiService = {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
-    });
+    });    if (!response.ok) {
+      throw new Error('Failed to fetch notices');
+    }
+
+    return response.json();
+  },
+
+  // Featured Riders methods
+  async fetchFeaturedRiders(): Promise<FeaturedRider[]> {
+    const response = await fetch(`${API_BASE_URL}/riders/featured/`);
 
     if (!response.ok) {
-      throw new Error('Failed to fetch notices');
+      throw new Error('Failed to fetch featured riders');
     }
 
     return response.json();

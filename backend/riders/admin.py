@@ -38,15 +38,15 @@ class MembershipApplicationAdmin(admin.ModelAdmin):
 
 @admin.register(Rider)
 class RiderAdmin(admin.ModelAdmin):
-    list_display = ['user', 'bike_model', 'custom_user_type', 'location', 'membership_status', 'created_at']
-    list_filter = ['membership_status', 'zone', 'created_at']
+    list_display = ['user', 'bike_model', 'custom_user_type', 'location', 'membership_status', 'is_featured', 'created_at']
+    list_filter = ['membership_status', 'zone', 'is_featured', 'created_at']
     search_fields = ['user__username', 'user__email', 'bike_model', 'custom_user_type']
-    list_editable = ['membership_status']
+    list_editable = ['membership_status', 'is_featured']
     readonly_fields = ['created_at', 'updated_at']
     
     fieldsets = (
         ('User Information', {
-            'fields': ('user', 'membership_status', 'zone')
+            'fields': ('user', 'membership_status', 'zone', 'is_featured')
         }),
         ('Profile Details', {
             'fields': ('bio', 'location', 'bike_model', 'custom_user_type', 'profile_image')

@@ -107,6 +107,7 @@ class Rider(models.Model):
     profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     membership_status = models.CharField(max_length=20, choices=MEMBERSHIP_STATUS_CHOICES, default='pending')
     zone = models.ForeignKey(Zone, on_delete=models.SET_NULL, null=True, blank=True)
+    is_featured = models.BooleanField(default=False, help_text="Mark this rider as a featured team controller")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

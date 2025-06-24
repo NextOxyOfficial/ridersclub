@@ -123,6 +123,36 @@ class RiderViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Rider.objects.select_related('user')
 
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def featured(self, request):
+        """Get featured riders (team controllers) for Help & Support"""
+        featured_riders = Rider.objects.filter(
+            is_featured=True,
+            membership_status='approved'
+        ).select_related('user').order_by('user__first_name')
+        
+        riders_data = []
+        for rider in featured_riders:
+            profile_photo_url = None
+            if rider.profile_image:
+                profile_photo_url = request.build_absolute_uri(rider.profile_image.url)
+            
+            riders_data.append({
+                'id': rider.id,
+                'user_id': rider.user.id,
+                'full_name': f"{rider.user.first_name} {rider.user.last_name}".strip() or rider.user.username,
+                'custom_user_type': rider.custom_user_type or 'Team Controller',
+                'profile_photo': profile_photo_url,
+                'bio': rider.bio,
+                'location': rider.location,
+                'zone': {
+                    'id': rider.zone.id,
+                    'name': rider.zone.name
+                } if rider.zone else None,
+            })
+        
+        return Response(riders_data)
+
 class RideEventViewSet(viewsets.ModelViewSet):
     queryset = RideEvent.objects.all()
     serializer_class = RideEventSerializer
