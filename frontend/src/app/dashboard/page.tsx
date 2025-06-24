@@ -820,9 +820,7 @@ export default function DashboardPage() {
                   Event Description
                 </h3>
                 <p className="text-gray-300 leading-relaxed">{selectedEvent.description}</p>
-              </div>
-
-              {/* Event Details */}
+              </div>              {/* Event Details */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white/5 rounded-lg p-4">
                   <h4 className="text-white font-bold mb-2 flex items-center">
@@ -830,7 +828,17 @@ export default function DashboardPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Duration
-                  </h4>                  <p className="text-gray-300">{selectedEvent.duration}</p>
+                  </h4>
+                  <p className="text-gray-300">{selectedEvent.duration}</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-4">
+                  <h4 className="text-white font-bold mb-2 flex items-center">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Organized by
+                  </h4>
+                  <p className="text-gray-300">{selectedEvent.organizer_name}</p>
                 </div>
               </div>
 
@@ -843,20 +851,8 @@ export default function DashboardPage() {
                     </svg>
                     Requirements
                   </h4>
-                  <div className="text-gray-300 whitespace-pre-line">{selectedEvent.requirements}</div>
-                </div>
+                  <div className="text-gray-300 whitespace-pre-line">{selectedEvent.requirements}</div>                </div>
               )}
-
-              {/* Organizer */}
-              <div className="bg-white/5 rounded-lg p-4">
-                <h4 className="text-white font-bold mb-2 flex items-center">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  Organized by
-                </h4>
-                <p className="text-gray-300">{selectedEvent.organizer_name}</p>
-              </div>
 
               {/* Action Button */}
               {selectedEvent.is_upcoming && (
