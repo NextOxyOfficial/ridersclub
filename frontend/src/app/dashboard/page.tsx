@@ -241,7 +241,7 @@ export default function DashboardPage() {
           {/* Enhanced Offer Card */}
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur-sm opacity-20"></div>
-            <div className="relative bg-gradient-to-br from-white/95 to-white/85 backdrop-blur-xl rounded-3xl p-6 border border-emerald-200/50 shadow-2xl">
+            <div className="relative bg-gradient-to-br from-white/95 to-white/85 backdrop-blur-xl rounded-3xl p-3 border border-emerald-200/50 shadow-2xl">
               <div className="flex items-center justify-between">
                 <div className="flex-1">                  
                   <div className="flex items-center mb-1">
@@ -279,10 +279,10 @@ export default function DashboardPage() {
                     </svg>
                     <span className="font-medium">Show membership card while billing</span>
                   </div>
-                </div>
-                  <div className="ml-4">
+                </div>                  
+                <div className="ml-4">
                   <div className="relative">
-                    <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl px-6 py-6 text-center shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                    <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl p-4 text-center shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
                       <div className="text-3xl font-black text-white mb-1">5%</div>
                       <div className="text-xs text-emerald-100 uppercase tracking-wide font-bold">OFF</div>
                     </div>
@@ -290,15 +290,7 @@ export default function DashboardPage() {
                       <span className="text-yellow-900 text-xs font-bold">!</span>
                     </div>
                   </div>
-                </div>
-              </div>
-                <div className="mt-6 pt-4 border-t border-gray-200">
-                <div className="flex justify-end">
-                  <button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-sm font-bold px-8 py-3 rounded-2xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-1">
-                    Visit Shop
-                  </button>
-                </div>
-              </div>
+                </div></div>
             </div>
           </div>
         </div>
