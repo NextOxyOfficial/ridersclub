@@ -137,24 +137,23 @@ export default function DashboardPage() {
       </div>
     );
   }  return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-900 via-purple-900 to-pink-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900">
       {/* Mobile App Header */}
-      <div className="sticky top-0 z-50 bg-white/10 backdrop-blur-xl border-b border-white/10">
+      <div className="sticky top-0 z-50 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 backdrop-blur-xl border-b border-purple-500/30">
         <div className="flex items-center justify-between px-4 py-4">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-white">Riders Club</h1>
-              <p className="text-xs text-purple-300">Bangladesh</p>
+            </div>            <div>
+              <h1 className="text-lg font-bold text-white">Rider's club Bangladesh</h1>
+              <p className="text-xs text-purple-300">Member</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="p-2 rounded-full bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors"
+            className="p-2 rounded-xl bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-all shadow-lg"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -162,71 +161,177 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>      {/* Main Content */}
-      <div className="p-4 pb-20">
-        {/* Profile Card - App Style */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 mb-6 border border-white/20">          {/* Profile Header */}
+      <div className="p-2 sm:p-4 pb-20">
+        {/* Profile Card - Enhanced Design */}
+        <div className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-6 mb-6 border border-white/30 shadow-2xl">          {/* Profile Header */}
           <div className="flex items-center space-x-4 mb-6">
             <div className="relative">
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+              <div className="w-24 h-24 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-xl p-1">
+                <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl flex items-center justify-center">
+                  <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
               </div>
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                <div className="w-2 h-2 bg-white rounded-full"></div>
+              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-4 border-white flex items-center justify-center shadow-lg">
+                <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-bold text-white">
+              <h3 className="text-2xl font-bold text-white mb-1">
                 {user?.full_name || user?.phone}
               </h3>
+              <div className="flex items-center space-x-2">
+                <div className="px-3 py-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full border border-emerald-400/30">
+                  <span className="text-emerald-300 text-xs font-semibold">Active Member</span>
+                </div>
+              </div>
             </div>
-          </div>          {/* Compact Profile Info */}
+          </div>          {/* Enhanced Profile Info with Cards */}
           <div className="space-y-3">
             {/* Row 1: Phone and Blood Group */}
-            <div className="flex gap-4">
-              <div className="flex-1 flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-2xl p-4 border border-blue-400/20">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-blue-300 text-xs font-medium">Phone</p>
+                    <p className="text-white font-bold text-sm">{user?.phone}</p>
+                  </div>
                 </div>
-                <p className="text-white font-semibold text-sm">{user?.phone}</p>
               </div>
-              <div className="flex-1 flex items-center space-x-2">
-                <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
+              
+              <div className="bg-gradient-to-r from-rose-500/10 to-pink-500/10 rounded-2xl p-4 border border-rose-400/20">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-rose-400 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-rose-300 text-xs font-medium">Blood</p>
+                    <p className="text-white font-bold text-sm">{user?.blood_group || 'Not provided'}</p>
+                  </div>
                 </div>
-                <p className="text-white font-semibold text-sm">{user?.blood_group || 'Not provided'}</p>
               </div>
             </div>
 
             {/* Row 2: Zone */}
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+            <div className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10 rounded-2xl p-4 border border-purple-400/20">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-purple-300 text-xs font-medium">Zone</p>
+                  <p className="text-white font-bold text-sm">{user?.zone?.name || 'Not assigned'}</p>
+                </div>
               </div>
-              <p className="text-white font-semibold text-sm">{user?.zone?.name || 'Not assigned'}</p>
             </div>
 
             {/* Motorcycle - Only if provided */}
             {user?.bike_model && (
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-orange-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+              <div className="bg-gradient-to-r from-orange-500/10 to-amber-500/10 rounded-2xl p-4 border border-orange-400/20">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-orange-300 text-xs font-medium">Motorcycle</p>
+                    <p className="text-white font-bold text-sm">{user.bike_model}</p>
+                  </div>
                 </div>
-                <p className="text-white font-semibold text-sm">{user.bike_model}</p>
               </div>
             )}
           </div>
-        </div>        {/* Pending Application Message */}
+        </div>        {/* Special Offers Section */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4 px-2">
+            <h3 className="text-lg font-bold text-white">Exclusive Benefits</h3>
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+              <span className="text-yellow-400 text-xs font-medium">New</span>
+            </div>
+          </div>
+          
+          {/* Enhanced Offer Card */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur-sm opacity-20"></div>
+            <div className="relative bg-gradient-to-br from-white/95 to-white/85 backdrop-blur-xl rounded-3xl p-6 border border-emerald-200/50 shadow-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center mb-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-2xl flex items-center justify-center mr-4 shadow-xl">
+                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="text-gray-900 font-black text-2xl">5% Discount</h4>
+                      <div className="flex items-center space-x-2">
+                        <div className="px-2 py-1 bg-emerald-100 rounded-full">
+                          <span className="text-emerald-700 text-xs font-bold">MEMBER EXCLUSIVE</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <h5 className="text-gray-800 font-black text-xl mb-2 flex items-center">
+                      <span className="mr-2">🏍️</span>
+                      Lyricz Motors
+                    </h5>
+                    <p className="text-gray-600 text-sm font-medium">Premium motorcycle services • Parts • Maintenance</p>
+                  </div>
+                  
+                  <div className="flex items-center text-sm text-emerald-700 bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3 rounded-xl inline-flex border border-emerald-200">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-semibold">Valid for all services & parts</span>
+                  </div>
+                </div>
+                
+                <div className="ml-6">
+                  <div className="relative">
+                    <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-3xl px-8 py-10 text-center shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                      <div className="text-5xl font-black text-white mb-2">5%</div>
+                      <div className="text-sm text-emerald-100 uppercase tracking-widest font-bold">OFF</div>
+                    </div>
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
+                      <span className="text-yellow-900 text-xs font-bold">!</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center text-sm text-gray-500">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-medium">Show membership card to redeem</span>
+                  </div>
+                  <button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-sm font-bold px-8 py-3 rounded-2xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-1">
+                    Visit Shop
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pending Application Message */}
         {user?.membership_status === 'pending' && (
           <div className="bg-amber-500/10 backdrop-blur-xl rounded-3xl p-6 mb-6 border border-amber-500/20">
             <div className="text-center">
@@ -241,32 +346,32 @@ export default function DashboardPage() {
               </p>
             </div>
           </div>
-        )}
-
-        {/* Quick Actions - App Style */}
+        )}        {/* Enhanced Quick Actions */}
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <button className="bg-white/5 backdrop-blur-xl rounded-2xl p-4 border border-white/10 hover:bg-white/10 transition-all">
+          <button className="group bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl rounded-3xl p-6 border border-blue-400/30 hover:border-blue-400/60 transition-all hover:scale-105 shadow-lg hover:shadow-xl">
             <div className="text-center">
-              <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg group-hover:scale-110 transition-transform">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-white text-sm font-medium">Help</p>
+              <p className="text-white text-sm font-bold">Help & Support</p>
+              <p className="text-blue-300 text-xs mt-1">Get assistance</p>
             </div>
           </button>
           
           <button 
             onClick={() => setShowPasswordModal(true)}
-            className="bg-white/5 backdrop-blur-xl rounded-2xl p-4 border border-white/10 hover:bg-white/10 transition-all"
+            className="group bg-gradient-to-br from-emerald-500/10 to-green-500/10 backdrop-blur-xl rounded-3xl p-6 border border-emerald-400/30 hover:border-emerald-400/60 transition-all hover:scale-105 shadow-lg hover:shadow-xl"
           >
             <div className="text-center">
-              <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg group-hover:scale-110 transition-transform">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                 </svg>
               </div>
-              <p className="text-white text-sm font-medium">Password</p>
+              <p className="text-white text-sm font-bold">Change Password</p>
+              <p className="text-emerald-300 text-xs mt-1">Security settings</p>
             </div>
           </button>
         </div>
