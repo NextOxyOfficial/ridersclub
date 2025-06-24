@@ -1474,11 +1474,28 @@ export default function DashboardPage() {
               <h4 className="text-white font-medium mb-2">Need More Help?</h4>
               <p className="text-gray-300 text-sm">
                 You can also reach out to us through our social media channels or contact the administrators directly.
-              </p>
-            </div>
+              </p>            </div>
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <footer className="mt-12 border-t border-white/10 pt-8 pb-4">
+        <div className="text-center">
+          <div className="pt-4 border-t border-white/5">
+            <p className="text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-center text-center">
+              <span className="flex items-center">
+                Developed with love 
+                <svg className="w-3 h-3 mx-1 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                </svg>
+                by
+              </span>
+              <span className="text-purple-400 font-medium sm:ml-1">Lyricz Softwares & Technology Limited</span>
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
