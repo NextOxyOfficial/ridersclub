@@ -81,11 +81,6 @@ export default function LoginPage() {
           </h1>          <p className="text-lg text-gray-300">
             Welcome back! Sign in to your account
           </p>
-          <div className="mt-4 text-sm text-purple-300">
-            <p>Test credentials:</p>
-            <p>Phone: +8801957045438</p>
-            <p>Password: 123456</p>
-          </div>
         </div>
 
         {/* Login Form */}
