@@ -23,17 +23,36 @@ def login_view(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # Find user by phone (username is set to phone number)
-    try:
-        user = User.objects.get(username=phone)
-    except User.DoesNotExist:
+    # Normalize phone number - try both formats
+    phone_formats = []
+    if phone.startswith('+880'):
+        # Convert +8801XXXXXXXXX to 01XXXXXXXXX
+        local_format = '0' + phone[4:]
+        phone_formats = [phone, local_format]
+    elif phone.startswith('01'):
+        # Convert 01XXXXXXXXX to +8801XXXXXXXXX
+        international_format = '+880' + phone[1:]
+        phone_formats = [phone, international_format]
+    else:
+        phone_formats = [phone]
+    
+    # Find user by phone (try both formats)
+    user = None
+    for phone_format in phone_formats:
+        try:
+            user = User.objects.get(username=phone_format)
+            break
+        except User.DoesNotExist:
+            continue
+    
+    if not user:
         return Response(
             {'detail': 'Invalid credentials'}, 
             status=status.HTTP_401_UNAUTHORIZED
         )
     
     # Authenticate user
-    user = authenticate(username=phone, password=password)
+    user = authenticate(username=user.username, password=password)
     if not user:
         return Response(
             {'detail': 'Invalid credentials'}, 
