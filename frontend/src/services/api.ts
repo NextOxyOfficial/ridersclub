@@ -322,6 +322,26 @@ export const apiService = {
     }
   },
 
+  async updateProfile(data: { zone_id?: string | number; bike_model?: string }): Promise<UserProfile> {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_BASE_URL}/auth/update-profile/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to update profile');
+    }
+
+    const result = await response.json();
+    return result.user;
+  },
+
   // Check if user is authenticated
   isAuthenticated(): boolean {
     return !!localStorage.getItem('access_token');

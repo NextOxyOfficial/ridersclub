@@ -159,19 +159,12 @@ def change_password_view(request):
     """
     Change user password
     """
-    current_password = request.data.get('current_password')
+    current_password = request.data.get('old_password') or request.data.get('current_password')
     new_password = request.data.get('new_password')
-    confirm_password = request.data.get('confirm_password')
     
-    if not current_password or not new_password or not confirm_password:
+    if not current_password or not new_password:
         return Response(
-            {'detail': 'Current password, new password, and confirmation are required'}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    if new_password != confirm_password:
-        return Response(
-            {'detail': 'New passwords do not match'}, 
+            {'detail': 'Current password and new password are required'}, 
             status=status.HTTP_400_BAD_REQUEST
         )
     
@@ -196,4 +189,92 @@ def change_password_view(request):
     
     return Response({
         'detail': 'Password changed successfully'
+    })
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_profile_view(request):
+    """
+    Update user profile (zone and bike model)
+    """
+    user = request.user
+    
+    try:
+        rider = Rider.objects.get(user=user)
+    except Rider.DoesNotExist:
+        return Response(
+            {'detail': 'Rider profile not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    zone_id = request.data.get('zone_id')
+    bike_model = request.data.get('bike_model')
+    
+    # Update zone if provided
+    if zone_id is not None:
+        if zone_id == '':
+            rider.zone = None
+        else:
+            try:
+                zone = Zone.objects.get(id=zone_id, is_active=True)
+                rider.zone = zone
+            except Zone.DoesNotExist:
+                return Response(
+                    {'detail': 'Invalid zone selected'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+    
+    # Update bike model if provided
+    if bike_model is not None:
+        rider.bike_model = bike_model.strip() if bike_model.strip() else None
+    
+    rider.save()
+    
+    # Also update MembershipApplication if exists
+    try:
+        application = MembershipApplication.objects.get(user=user)
+        if zone_id is not None and zone_id != '':
+            try:
+                zone = Zone.objects.get(id=zone_id, is_active=True)
+                application.zone = zone
+                application.save()
+            except Zone.DoesNotExist:
+                pass
+        
+        if bike_model is not None:
+            bike_parts = bike_model.strip().split(' ', 1) if bike_model.strip() else ['', '']
+            if len(bike_parts) >= 2:
+                application.motorcycle_brand = bike_parts[0]
+                application.motorcycle_model = bike_parts[1]
+            else:
+                application.motorcycle_brand = bike_parts[0] if bike_parts[0] else ''
+                application.motorcycle_model = ''
+            application.save()
+    except MembershipApplication.DoesNotExist:
+        pass
+      # Return updated profile data
+    # Get blood group from MembershipApplication
+    blood_group = None
+    try:
+        application = MembershipApplication.objects.get(user=user)
+        blood_group = application.blood_group
+    except MembershipApplication.DoesNotExist:
+        pass
+    
+    response_data = {
+        'id': user.id,
+        'phone': user.username,
+        'full_name': f"{user.first_name} {user.last_name}".strip() or user.username,
+        'membership_status': rider.membership_status,
+        'zone': {
+            'id': rider.zone.id,
+            'name': rider.zone.name
+        } if rider.zone else None,
+        'blood_group': blood_group,
+        'bike_model': rider.bike_model,
+    }
+    
+    return Response({
+        'detail': 'Profile updated successfully',
+        'user': response_data
     })

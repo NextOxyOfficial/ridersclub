@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { apiService, UserProfile, ChangePasswordData, Benefit, RideEvent } from '../../services/api';
+import { apiService, UserProfile, ChangePasswordData, Benefit, RideEvent, Zone } from '../../services/api';
 
 export default function DashboardPage() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -24,11 +24,21 @@ export default function DashboardPage() {
     old_password: '',
     new_password: '',
     confirm_password: '',
-  });
-  const [passwordError, setPasswordError] = useState<string>('');
+  });  const [passwordError, setPasswordError] = useState<string>('');
   const [passwordSuccess, setPasswordSuccess] = useState<string>('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const router = useRouter();  useEffect(() => {
+    // Profile edit states
+  const [showProfileEditModal, setShowProfileEditModal] = useState(false);
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [profileEditData, setProfileEditData] = useState({
+    zone_id: '',
+    bike_model: ''
+  });
+  const [profileEditError, setProfileEditError] = useState<string>('');
+  const [profileEditSuccess, setProfileEditSuccess] = useState<string>('');
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  
+  const router = useRouter();useEffect(() => {
     const checkAuth = async () => {
       if (!apiService.isAuthenticated()) {
         router.push('/login');
@@ -225,7 +235,6 @@ export default function DashboardPage() {
       setIsChangingPassword(false);
     }
   };
-
   const handlePasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({
@@ -236,6 +245,74 @@ export default function DashboardPage() {
     // Clear errors when user starts typing
     if (passwordError) {
       setPasswordError('');
+    }
+  };
+
+  // Profile edit functions
+  const openProfileEditModal = async () => {
+    try {
+      // Fetch zones if not already loaded
+      if (zones.length === 0) {
+        const fetchedZones = await apiService.fetchZones();
+        setZones(fetchedZones);
+      }
+      
+      // Set current values
+      setProfileEditData({
+        zone_id: user?.zone?.id?.toString() || '',
+        bike_model: user?.bike_model || ''
+      });
+      
+      setShowProfileEditModal(true);
+      setProfileEditError('');
+      setProfileEditSuccess('');
+    } catch (error) {
+      console.error('Error fetching zones:', error);
+      setProfileEditError('Failed to load zones');
+    }  };
+
+  const handleProfileEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileEditError('');
+    setProfileEditSuccess('');
+    setIsUpdatingProfile(true);
+
+    try {
+      const updateData: { zone_id?: string | number; bike_model?: string } = {};
+      
+      if (profileEditData.zone_id !== (user?.zone?.id?.toString() || '')) {
+        updateData.zone_id = profileEditData.zone_id || '';
+      }
+      
+      if (profileEditData.bike_model !== (user?.bike_model || '')) {
+        updateData.bike_model = profileEditData.bike_model;
+      }
+
+      const updatedUser = await apiService.updateProfile(updateData);
+      setUser(updatedUser);
+      setProfileEditSuccess('Profile updated successfully!');
+      
+      setTimeout(() => {
+        setShowProfileEditModal(false);
+        setProfileEditSuccess('');
+      }, 2000);
+    } catch (error) {
+      console.error('Profile update error:', error);
+      setProfileEditError(error instanceof Error ? error.message : 'Failed to update profile');
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
+  const handleProfileEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setProfileEditData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+    
+    if (profileEditError) {
+      setProfileEditError('');
     }
   };
 
@@ -313,9 +390,23 @@ export default function DashboardPage() {
                 <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
               </div>
             </div>            <div className="flex-1">
-              <h3 className="text-2xl font-bold text-white mb-1">
-                {user?.full_name || user?.phone}
-              </h3>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-white leading-tight">
+                    {user?.full_name || user?.phone}
+                  </h3>
+                  <p className="text-purple-300 text-sm">Member</p>
+                </div>
+                <button
+                  onClick={openProfileEditModal}
+                  className="ml-2 p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                  title="Edit Zone and Bike Details"
+                >
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              </div>
               <div className="space-y-2">
                 {/* Phone and Blood Group */}
                 <div className="flex items-center space-x-4">
@@ -1126,6 +1217,116 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     'Change Password'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>        </div>
+      )}
+
+      {/* Profile Edit Modal */}
+      {showProfileEditModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20 max-w-md w-full">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
+              <button
+                onClick={() => {
+                  setShowProfileEditModal(false);
+                  setProfileEditError('');
+                  setProfileEditSuccess('');
+                }}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleProfileEdit} className="space-y-6">
+              <div>
+                <label className="block text-white font-medium mb-2">
+                  Zone
+                </label>
+                <select
+                  name="zone_id"
+                  value={profileEditData.zone_id}
+                  onChange={handleProfileEditInputChange}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="" className="bg-gray-800 text-white">Select Zone</option>
+                  {zones.map((zone) => (
+                    <option key={zone.id} value={zone.id} className="bg-gray-800 text-white">
+                      {zone.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-white font-medium mb-2">
+                  Bike Model
+                </label>
+                <input
+                  type="text"
+                  name="bike_model"
+                  value={profileEditData.bike_model}
+                  onChange={handleProfileEditInputChange}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="e.g., Yamaha R15, Honda CB150R"
+                />
+              </div>
+
+              {profileEditError && (
+                <div className="bg-red-500/20 border border-red-500/30 text-red-300 p-4 rounded-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span className="font-medium">{profileEditError}</span>
+                  </div>
+                </div>
+              )}
+
+              {profileEditSuccess && (
+                <div className="bg-green-500/20 border border-green-500/30 text-green-300 p-4 rounded-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-medium">{profileEditSuccess}</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProfileEditModal(false);
+                    setProfileEditError('');
+                    setProfileEditSuccess('');
+                  }}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingProfile}
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-all duration-300"
+                >
+                  {isUpdatingProfile ? (
+                    <div className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Updating...
+                    </div>
+                  ) : (
+                    'Update Profile'
                   )}
                 </button>
               </div>
