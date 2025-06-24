@@ -439,27 +439,29 @@ export default function DashboardPage() {
                               <h4 className="text-white font-bold text-lg">Dhaka Night Ride</h4>
                               <p className="text-blue-300 text-sm">December 30, 2024 • 8:00 PM</p>
                             </div>
-                          </div>                          <p className="text-gray-300 text-sm mb-2">Join us for an exciting night ride through the streets of Dhaka. Safety gear mandatory.</p>
-                          <div className="flex items-center space-x-4 text-xs">
+                          </div>                          <p className="text-gray-300 text-sm mb-2">Join us for an exciting night ride through the streets of Dhaka. Safety gear mandatory.</p>                          <div className="flex items-center space-x-4 text-xs">
                             <span className="bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full">📍 Dhanmondi 27</span>
                             <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">🎫 Free</span>
-                            <span className="bg-purple-500/30 text-purple-300 px-2 py-1 rounded-full">👥 23/50 Joined</span>
                           </div>
-                          <button 
-                            onClick={() => openEventModal('dhaka-night-ride')}
-                            className="mt-2 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
-                          >
-                            Read More →
-                          </button></div>                        <button 
-                          onClick={() => handleJoinEvent('dhaka-night-ride', 'Dhaka Night Ride')}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            registeredEvents.has('dhaka-night-ride')
-                              ? 'bg-green-500 hover:bg-red-500 text-white'
-                              : 'bg-blue-500 hover:bg-blue-600 text-white'
-                          }`}
-                        >
-                          {registeredEvents.has('dhaka-night-ride') ? 'Registered' : "I'll Join"}
-                        </button>
+                          <div className="flex items-center justify-between mt-2">
+                            <button 
+                              onClick={() => openEventModal('dhaka-night-ride')}
+                              className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+                            >
+                              Read More →
+                            </button>
+                            <button 
+                              onClick={() => handleJoinEvent('dhaka-night-ride', 'Dhaka Night Ride')}
+                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                registeredEvents.has('dhaka-night-ride')
+                                  ? 'bg-green-500 hover:bg-red-500 text-white'
+                                  : 'bg-blue-500 hover:bg-blue-600 text-white'
+                              }`}
+                            >
+                              {registeredEvents.has('dhaka-night-ride') ? 'Registered' : "I'll Join"}
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -476,27 +478,29 @@ export default function DashboardPage() {
                               <h4 className="text-white font-bold text-lg">Safety Workshop</h4>
                               <p className="text-emerald-300 text-sm">January 5, 2025 • 2:00 PM</p>
                             </div>
-                          </div>                          <p className="text-gray-300 text-sm mb-2">Learn essential riding safety tips and techniques from professional instructors.</p>
-                          <div className="flex items-center space-x-4 text-xs">
+                          </div>                          <p className="text-gray-300 text-sm mb-2">Learn essential riding safety tips and techniques from professional instructors.</p>                          <div className="flex items-center space-x-4 text-xs">
                             <span className="bg-emerald-500/30 text-emerald-300 px-2 py-1 rounded-full">📍 Club House</span>
                             <span className="bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded-full">🎫 ৳500</span>
-                            <span className="bg-purple-500/30 text-purple-300 px-2 py-1 rounded-full">👥 18/30 Joined</span>
                           </div>
-                          <button 
-                            onClick={() => openEventModal('safety-workshop')}
-                            className="mt-2 text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors"
-                          >
-                            Read More →
-                          </button></div>                        <button 
-                          onClick={() => handleJoinEvent('safety-workshop', 'Safety Workshop')}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            registeredEvents.has('safety-workshop')
-                              ? 'bg-green-500 hover:bg-red-500 text-white'
-                              : 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                          }`}
-                        >
-                          {registeredEvents.has('safety-workshop') ? 'Registered' : "I'll Join"}
-                        </button>
+                          <div className="flex items-center justify-between mt-2">
+                            <button 
+                              onClick={() => openEventModal('safety-workshop')}
+                              className="text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors"
+                            >
+                              Read More →
+                            </button>
+                            <button 
+                              onClick={() => handleJoinEvent('safety-workshop', 'Safety Workshop')}
+                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                registeredEvents.has('safety-workshop')
+                                  ? 'bg-green-500 hover:bg-red-500 text-white'
+                                  : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                              }`}
+                            >
+                              {registeredEvents.has('safety-workshop') ? 'Registered' : "I'll Join"}
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -513,27 +517,29 @@ export default function DashboardPage() {
                               <h4 className="text-white font-bold text-lg">Cox's Bazar Tour</h4>
                               <p className="text-orange-300 text-sm">January 15-17, 2025</p>
                             </div>
-                          </div>                          <p className="text-gray-300 text-sm mb-2">3-day adventure tour to Cox's Bazar. Accommodation and meals included.</p>
-                          <div className="flex items-center space-x-4 text-xs">
+                          </div>                          <p className="text-gray-300 text-sm mb-2">3-day adventure tour to Cox's Bazar. Accommodation and meals included.</p>                          <div className="flex items-center space-x-4 text-xs">
                             <span className="bg-orange-500/30 text-orange-300 px-2 py-1 rounded-full">🏖️ Cox's Bazar</span>
                             <span className="bg-red-500/30 text-red-300 px-2 py-1 rounded-full">🎫 ৳15,000</span>
-                            <span className="bg-purple-500/30 text-purple-300 px-2 py-1 rounded-full">👥 12/25 Joined</span>
                           </div>
-                          <button 
-                            onClick={() => openEventModal('coxs-bazar-tour')}
-                            className="mt-2 text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors"
-                          >
-                            Read More →
-                          </button></div>                        <button 
-                          onClick={() => handleJoinEvent('coxs-bazar-tour', "Cox's Bazar Tour")}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            registeredEvents.has('coxs-bazar-tour')
-                              ? 'bg-green-500 hover:bg-red-500 text-white'
-                              : 'bg-orange-500 hover:bg-orange-600 text-white'
-                          }`}
-                        >
-                          {registeredEvents.has('coxs-bazar-tour') ? 'Registered' : "I'll Join"}
-                        </button>
+                          <div className="flex items-center justify-between mt-2">
+                            <button 
+                              onClick={() => openEventModal('coxs-bazar-tour')}
+                              className="text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors"
+                            >
+                              Read More →
+                            </button>
+                            <button 
+                              onClick={() => handleJoinEvent('coxs-bazar-tour', "Cox's Bazar Tour")}
+                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                registeredEvents.has('coxs-bazar-tour')
+                                  ? 'bg-green-500 hover:bg-red-500 text-white'
+                                  : 'bg-orange-500 hover:bg-orange-600 text-white'
+                              }`}
+                            >
+                              {registeredEvents.has('coxs-bazar-tour') ? 'Registered' : "I'll Join"}
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
