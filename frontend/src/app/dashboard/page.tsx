@@ -1396,7 +1396,7 @@ export default function DashboardPage() {
       {/* Help & Support Modal */}
       {showHelpModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:p-8 p-3 shadow-2xl border border-white/20 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-white">Help & Support</h2>
               <button
@@ -1431,19 +1431,20 @@ export default function DashboardPage() {
               ) : featuredRiders.length > 0 ? (
                 <div className="grid gap-4">
                   {featuredRiders.map((rider) => (
-                    <div key={rider.id} className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm rounded-2xl p-4 border border-purple-400/30">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div key={rider.id} className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm rounded-2xl p-4 border border-purple-400/30">                      <div className="flex items-center space-x-4">
+                        <div className="w-16 h-16 rounded-full flex-shrink-0 overflow-hidden">
                           {rider.profile_photo ? (
                             <img 
                               src={rider.profile_photo} 
                               alt={rider.full_name} 
-                              className="w-16 h-16 rounded-full object-cover"
+                              className="w-full h-full object-cover rounded-full"
                             />
                           ) : (
-                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
+                            <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-blue-500 rounded-full flex items-center justify-center">
+                              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                            </div>
                           )}
                         </div>
                         <div className="flex-1">

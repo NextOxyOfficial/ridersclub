@@ -121,8 +121,7 @@ class RiderViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        return Rider.objects.select_related('user')
-
+        return Rider.objects.select_related('user')    
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def featured(self, request):
         """Get featured riders (team controllers) for Help & Support"""
@@ -134,8 +133,18 @@ class RiderViewSet(viewsets.ModelViewSet):
         riders_data = []
         for rider in featured_riders:
             profile_photo_url = None
+            
+            # First check if rider has profile image
             if rider.profile_image:
                 profile_photo_url = request.build_absolute_uri(rider.profile_image.url)
+            else:
+                # Check MembershipApplication for profile photo
+                try:
+                    application = MembershipApplication.objects.get(user=rider.user)
+                    if application.profile_photo:
+                        profile_photo_url = request.build_absolute_uri(application.profile_photo.url)
+                except MembershipApplication.DoesNotExist:
+                    pass
             
             riders_data.append({
                 'id': rider.id,
