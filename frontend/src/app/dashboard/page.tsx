@@ -3,13 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { apiService, UserProfile, ChangePasswordData } from '../../services/api';
+import { apiService, UserProfile, ChangePasswordData, Benefit } from '../../services/api';
 
 export default function DashboardPage() {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [benefits, setBenefits] = useState<Benefit[]>([]);
+  const [benefitsLoading, setBenefitsLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [showPasswordModal, setShowPasswordModal] = useState(false);  const [passwordData, setPasswordData] = useState<ChangePasswordData & { confirm_password: string }>({
+  const [showPasswordModal, setShowPasswordModal] = useState(false);const [passwordData, setPasswordData] = useState<ChangePasswordData & { confirm_password: string }>({
     old_password: '',
     new_password: '',
     confirm_password: '',
@@ -18,31 +20,49 @@ export default function DashboardPage() {
   const [passwordSuccess, setPasswordSuccess] = useState<string>('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const router = useRouter();
-
   useEffect(() => {
     const checkAuth = async () => {
       if (!apiService.isAuthenticated()) {
         router.push('/login');
         return;
-      }
-
-      try {
-        const userProfile = await apiService.getCurrentUser();
+      }      try {
+        const [userProfile, allBenefits] = await Promise.all([
+          apiService.getCurrentUser(),
+          apiService.fetchBenefits() // Fetch all benefits instead of just featured
+        ]);
+        
         setUser(userProfile);
+        setBenefits(allBenefits); // Show all benefits
       } catch (error) {
-        console.error('Error fetching user profile:', error);
-        setError('Failed to load user profile');
+        console.error('Error fetching data:', error);
+        setError('Failed to load dashboard data');
         // If token is invalid, redirect to login
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         router.push('/login');
       } finally {
         setIsLoading(false);
+        setBenefitsLoading(false);
       }
     };
 
     checkAuth();
   }, [router]);
+  const handleUseBenefit = async (benefitId: number, websiteUrl?: string) => {
+    try {
+      await apiService.useBenefit(benefitId);
+      if (websiteUrl) {
+        window.open(websiteUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error using benefit:', error);
+      // Still open the website even if tracking fails
+      if (websiteUrl) {
+        window.open(websiteUrl, '_blank');
+      }
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await apiService.logout();
@@ -227,72 +247,136 @@ export default function DashboardPage() {
             </div>
           </div>          
           
-        </div>        
-        {/* Special Offers Section */}
+        </div>        {/* Special Offers Section */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3 px-2">
-            <h3 className="text-xl font-bold text-white">Exclusive Benefits For Rider's Club Members</h3>
+            <h3 className="text-xl font-bold text-white">All Benefits For Rider's Club Members</h3>
             <div className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-              <span className="text-yellow-400 text-xs font-medium">New</span>
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+              <span className="text-emerald-400 text-xs font-medium">{benefits.length} Available</span>
             </div>
           </div>
           
-          {/* Enhanced Offer Card */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur-sm opacity-20"></div>
-            <div className="relative bg-gradient-to-br from-white/95 to-white/85 backdrop-blur-xl rounded-3xl p-3 border border-emerald-200/50 shadow-2xl">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">                  
-                  <div className="flex items-center mb-1">
-                    <div className="w-14 h-14 bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-2xl flex items-center justify-center mr-4 shadow-xl">
-                      <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="text-gray-900 font-black text-2xl">5% Discount</h4>
-                      <div className="px-2 py-1 bg-emerald-100 rounded-full inline-block">
-                        <span className="text-emerald-700 text-xs font-bold">Valid till Dec 31, 2025</span>
+          {benefitsLoading ? (
+            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20">
+              <div className="animate-pulse flex items-center space-x-4">
+                <div className="w-14 h-14 bg-gray-300 rounded-2xl"></div>
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+                </div>
+              </div>
+            </div>          ) : benefits.length > 0 ? (
+            <div className="space-y-4">
+              {benefits.map((benefit) => (
+                <div key={benefit.id} className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur-sm opacity-20"></div>
+                  <div className="relative bg-gradient-to-br from-white/95 to-white/85 backdrop-blur-xl rounded-3xl p-3 border border-emerald-200/50 shadow-2xl">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">                  
+                        <div className="flex items-center mb-1">
+                          <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-2xl flex items-center justify-center mr-3 shadow-xl">
+                            <i className={`${benefit.category_icon} text-white text-lg`}></i>
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-gray-900 font-black text-lg">
+                              {benefit.discount_percentage 
+                                ? `${benefit.discount_percentage}% Discount`
+                                : benefit.discount_amount 
+                                ? `৳${benefit.discount_amount} Off`
+                                : 'Special Offer'
+                              }
+                            </h4>
+                            <div className="px-2 py-1 bg-emerald-100 rounded-full inline-block">
+                              <span className="text-emerald-700 text-xs font-bold">
+                                {benefit.valid_until 
+                                  ? `Valid till ${new Date(benefit.valid_until).toLocaleDateString()}`
+                                  : 'Limited Time'
+                                }
+                              </span>
+                            </div>
+                          </div>
+                          <div className="ml-2">
+                            <div className="relative">
+                              <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-xl p-2 text-center shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                                <div className="text-lg font-black text-white">
+                                  {benefit.discount_percentage || benefit.discount_amount || '★'}
+                                </div>
+                                <div className="text-xs text-emerald-100 uppercase tracking-wide font-bold">
+                                  {benefit.discount_percentage ? 'OFF' : benefit.discount_amount ? 'OFF' : 'DEAL'}
+                                </div>
+                              </div>
+                              {benefit.is_featured && (
+                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center">
+                                  <span className="text-yellow-900 text-xs font-bold">★</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="mb-3">
+                          <h5 className="text-gray-800 font-black text-lg mb-1 flex items-center">
+                            <span className="mr-2">🏍️</span>
+                            {benefit.partner_name}
+                          </h5>
+                          <p className="text-gray-600 text-sm font-medium line-clamp-2">{benefit.description}</p>
+                        </div>
+                        
+                        <div className="flex items-center text-sm text-emerald-700 bg-gradient-to-r from-emerald-50 to-teal-50 px-3 py-2 rounded-xl inline-flex border border-emerald-200 mb-2">
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="font-semibold">{benefit.title}</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-xs text-gray-500">
+                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="font-medium">Show membership card</span>
+                          </div>
+                          
+                          {benefit.website_url && (
+                            <button
+                              onClick={() => handleUseBenefit(benefit.id, benefit.website_url)}
+                              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-1.5 px-3 rounded-lg transition-all duration-300 text-xs"
+                            >
+                              Visit Shop
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="mb-4">
-                    <h5 className="text-gray-800 font-black text-xl mb-2 flex items-center">
-                      <span className="mr-2">🏍️</span>
-                      Lyricz Motors
-                    </h5>
-                    <p className="text-gray-600 text-sm font-medium">Premium motorcycle services • Parts • Maintenance</p>
-                  </div>
-                    <div className="flex items-center text-sm text-emerald-700 bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3 rounded-xl inline-flex border border-emerald-200">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="font-semibold">Valid for all services & parts</span>
-                  </div>
-                  
-                  <div className="flex items-center text-sm text-gray-500 mt-3">
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="font-medium">Show membership card at billing</span>
-                  </div>
-                </div>                  
-                <div className="ml-4">
-                  <div className="relative">
-                    <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl p-4 text-center shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                      <div className="text-3xl font-black text-white mb-1">5%</div>
-                      <div className="text-xs text-emerald-100 uppercase tracking-wide font-bold">OFF</div>
-                    </div>
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
-                      <span className="text-yellow-900 text-xs font-bold">!</span>
-                    </div>
-                  </div>
-                </div></div>
+                </div>
+              ))}
+              
+              {/* View Detailed Benefits Link */}
+              <div className="text-center pt-4">
+                <Link 
+                  href="/benefits" 
+                  className="inline-flex items-center bg-gradient-to-r from-purple-600/20 to-blue-600/20 hover:from-purple-600/40 hover:to-blue-600/40 border border-purple-500/30 text-purple-300 hover:text-white font-medium py-2 px-4 rounded-lg transition-all duration-300"
+                >
+                  <span>View Detailed Benefits Page</span>
+                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 text-center">
+              <div className="text-gray-400">
+                <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-2.172a1 1 0 01-.707-.293l-2.414-2.414a1 1 0 00-.707-.293H8" />
+                </svg>
+                <p className="text-white font-medium">No benefits available at the moment</p>
+                <p className="text-sm mt-1">Check back later for exclusive offers!</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Pending Application Message */}
