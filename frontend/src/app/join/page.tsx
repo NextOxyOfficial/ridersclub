@@ -400,7 +400,7 @@ export default function JoinPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-2 sm:px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-6 sm:py-12 px-2 sm:px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
@@ -432,7 +432,7 @@ export default function JoinPage() {
         </div>        
         
         {/* Form */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 md:p-12 shadow-2xl border border-white/20">
+        <div className="bg-white/30 backdrop-blur-lg rounded-2xl p-4 md:p-12 shadow-2xl border border-white/20">
           {/* Sticky Progress Bar */}
           <div className="sticky top-4 z-10 mb-8 bg-slate-800 rounded-lg p-4 border border-purple-500/30 shadow-lg">
             <div className="flex justify-between items-center mb-2">
@@ -812,17 +812,16 @@ export default function JoinPage() {
               <h2 className="text-2xl font-bold text-white mb-6 border-b border-purple-500/30 pb-2">
                 Motorcycle Information (Optional)
               </h2>
-              
-              {/* Checkbox for owning a motorbike */}
+                {/* Checkbox for owning a motorbike */}
               <div className="mb-6">
-                <div className="flex items-center">
+                <div className="flex items-start">
                   <input
                     type="checkbox"
                     name="hasMotorbike"
                     id="hasMotorbike"
                     checked={formData.hasMotorbike}
                     onChange={handleInputChange}
-                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                    className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                   />
                   <label htmlFor="hasMotorbike" className="ml-3 text-white font-medium">
                     I have a motorbike
@@ -919,9 +918,7 @@ export default function JoinPage() {
                     I confirm that I am a citizen of Bangladesh *
                   </label>
                 </div>
-                {errors.citizenshipConfirm && <p className="text-red-400 text-sm">{errors.citizenshipConfirm}</p>}
-
-                <div className="flex items-start">
+                {errors.citizenshipConfirm && <p className="text-red-400 text-sm">{errors.citizenshipConfirm}</p>}                <div className="flex items-start">
                   <input
                     type="checkbox"
                     name="agreeTerms"
@@ -931,7 +928,7 @@ export default function JoinPage() {
                     className="mt-1 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                   />
                   <label htmlFor="agreeTerms" className="ml-3 text-white">
-                    I agree to the terms and conditions of Riders Club Bangladesh *
+                    I agree to the Terms & Conditions *
                   </label>
                 </div>
                 {errors.agreeTerms && <p className="text-red-400 text-sm">{errors.agreeTerms}</p>}
