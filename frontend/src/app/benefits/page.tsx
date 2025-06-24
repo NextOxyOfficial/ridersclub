@@ -65,13 +65,7 @@ export default function BenefitsPage() {
     benefit.partner_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     benefit.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
   const handleUseBenefit = async (benefitId: number) => {
-    if (!apiService.isAuthenticated()) {
-      alert('Please login to use benefits');
-      return;
-    }
-
     try {
       await apiService.useBenefit(benefitId);
       alert('Benefit usage recorded successfully!');
@@ -209,10 +203,9 @@ export default function BenefitsPage() {
             <h2 className="text-3xl font-bold text-white mb-8 text-center">
               🌟 Featured Benefits
             </h2>
-            {filteredFeaturedBenefits.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredFeaturedBenefits.length > 0 ? (              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredFeaturedBenefits.map((benefit) => (
-                  <BenefitCard key={benefit.id} benefit={benefit} onUseBenefit={handleUseBenefit} />
+                  <BenefitCard key={benefit.id} benefit={benefit} onUseBenefit={handleUseBenefit} isAuthenticated={apiService.isAuthenticated()} />
                 ))}
               </div>
             ) : (
@@ -229,10 +222,9 @@ export default function BenefitsPage() {
             <h2 className="text-3xl font-bold text-white mb-8 text-center">
               {categories.find(c => c.id === selectedCategory)?.name} Benefits
             </h2>
-            {filteredCategoryBenefits.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCategoryBenefits.length > 0 ? (              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCategoryBenefits.map((benefit) => (
-                  <BenefitCard key={benefit.id} benefit={benefit} onUseBenefit={handleUseBenefit} />
+                  <BenefitCard key={benefit.id} benefit={benefit} onUseBenefit={handleUseBenefit} isAuthenticated={apiService.isAuthenticated()} />
                 ))}
               </div>
             ) : (
@@ -260,17 +252,64 @@ export default function BenefitsPage() {
                     <i className={`${categoryData.category.icon} mr-3`}></i>
                     {categoryData.category.name}
                   </h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                </div>                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {categoryData.benefits.map((benefit) => (
-                    <BenefitCard key={benefit.id} benefit={benefit} onUseBenefit={handleUseBenefit} compact />
+                    <BenefitCard key={benefit.id} benefit={benefit} onUseBenefit={handleUseBenefit} compact isAuthenticated={apiService.isAuthenticated()} />
                   ))}
                 </div>
               </div>
-            ))}
-          </div>
+            ))}          </div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="mt-16 pt-12 border-t border-white/10">
+        <div className="max-w-4xl mx-auto text-center">
+          {/* Footer Links */}
+          <div className="flex flex-wrap justify-center gap-6 mb-6">
+            <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
+              Terms & Conditions
+            </Link>
+            <Link href="/community-guidelines" className="text-gray-400 hover:text-white transition-colors">
+              Community Guidelines
+            </Link>
+            <Link href="/support" className="text-gray-400 hover:text-white transition-colors">
+              Support
+            </Link>
+          </div>
+
+          {/* Copyright */}
+          <div className="text-gray-400 mb-4">
+            <p className="mb-2">
+              © 2025 Rider's Club Bangladesh. • All rights reserved.
+            </p>
+            <p className="text-sm">
+              By using this service, you agree to our Terms of Service and Privacy Policy. 
+              Rider's Club Bangladesh is a registered trademark of Lyricz Motors.
+            </p>
+          </div>
+
+          {/* Legal Notice */}
+          <div className="text-xs text-gray-500 mb-4">
+            <p className="mb-2">
+              All content, logos, and designs are protected by copyright and other intellectual property laws. 
+              Unauthorized reproduction or distribution is strictly prohibited.
+            </p>
+          </div>          {/* Developer Credit */}
+          <div className="text-xs text-gray-500 pt-4 border-t border-white/5">
+            <p className="flex flex-col sm:flex-row items-center justify-center text-center">
+              <span className="flex items-center">
+                Developed with love 
+                <svg className="w-3 h-3 mx-1 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                </svg>
+                by
+              </span>
+              <span className="sm:ml-1">Lyricz Softwares & Technology Limited</span>
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -279,9 +318,10 @@ interface BenefitCardProps {
   benefit: Benefit;
   onUseBenefit: (benefitId: number) => void;
   compact?: boolean;
+  isAuthenticated: boolean;
 }
 
-function BenefitCard({ benefit, onUseBenefit, compact = false }: BenefitCardProps) {
+function BenefitCard({ benefit, onUseBenefit, compact = false, isAuthenticated }: BenefitCardProps) {
   return (
     <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 shadow-2xl border border-white/20 hover:bg-white/15 transition-all duration-300 transform hover:scale-105">
       {/* Partner Logo/Image */}
@@ -330,43 +370,41 @@ function BenefitCard({ benefit, onUseBenefit, compact = false }: BenefitCardProp
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
           {benefit.location.length > 50 ? `${benefit.location.substring(0, 50)}...` : benefit.location}
-        </p>
-      )}
-
-      {/* Usage Stats */}
-      <div className="flex justify-between items-center mb-4 text-xs text-gray-400">
-        <span>Used {benefit.usage_count} times</span>
-        {!benefit.is_available_in_zone && (
-          <span className="text-yellow-400">Not available in your zone</span>
-        )}
-        {benefit.usage_limit && (
-          <span>Limit: {benefit.usage_limit} uses</span>
-        )}
-      </div>      {/* Actions */}
+        </p>      )}      {/* Actions */}
       <div className="flex gap-2">
-        {benefit.website_url ? (
-          <a
-            href={benefit.website_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => onUseBenefit(benefit.id)}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-sm text-center inline-flex items-center justify-center"
-          >
-            <span>Visit Shop & Use Benefit</span>
-            <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </a>
+        {isAuthenticated ? (
+          <>
+            {benefit.website_url ? (
+              <a
+                href={benefit.website_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => onUseBenefit(benefit.id)}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-sm text-center inline-flex items-center justify-center"
+              >
+                <span>Visit Shop & Use Benefit</span>
+                <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            ) : (
+              <button
+                onClick={() => onUseBenefit(benefit.id)}
+                disabled={!benefit.is_available_in_zone}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-sm"
+              >
+                Use Benefit
+              </button>
+            )}
+          </>
         ) : (
-          <button
-            onClick={() => onUseBenefit(benefit.id)}
-            disabled={!benefit.is_available_in_zone}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-sm"
-          >
-            Use Benefit
-          </button>
+          <div className="flex-1 bg-gray-600 text-gray-300 font-bold py-2 px-4 rounded-lg text-sm text-center flex items-center justify-center">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            Login Required to Use
+          </div>
         )}
-        
       </div>
 
       {/* Contact Info */}
