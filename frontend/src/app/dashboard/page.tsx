@@ -8,10 +8,11 @@ import { apiService, UserProfile, ChangePasswordData, Benefit } from '../../serv
 export default function DashboardPage() {
   const [user, setUser] = useState<UserProfile | null>(null);  const [benefits, setBenefits] = useState<Benefit[]>([]);
   const [benefitsLoading, setBenefitsLoading] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);  const [error, setError] = useState<string>('');
-  const [activeEventTab, setActiveEventTab] = useState<'upcoming' | 'previous'>('upcoming');
+  const [isLoading, setIsLoading] = useState(true);  const [error, setError] = useState<string>('');  const [activeEventTab, setActiveEventTab] = useState<'upcoming' | 'previous'>('upcoming');
   const [registeredEvents, setRegisteredEvents] = useState<Set<string>>(new Set());
-  const [showPasswordModal, setShowPasswordModal] = useState(false);const [passwordData, setPasswordData] = useState<ChangePasswordData & { confirm_password: string }>({
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [showEventModal, setShowEventModal] = useState(false);const [passwordData, setPasswordData] = useState<ChangePasswordData & { confirm_password: string }>({
     old_password: '',
     new_password: '',
     confirm_password: '',
@@ -90,8 +91,7 @@ export default function DashboardPage() {
         
         console.log(`Successfully registered for event: ${eventName}`);
       } catch (error) {
-        console.error('Error registering for event:', error);
-        // Remove from registered state on error
+        console.error('Error registering for event:', error);        // Remove from registered state on error
         setRegisteredEvents(prev => {
           const newSet = new Set(prev);
           newSet.delete(eventId);
@@ -99,6 +99,60 @@ export default function DashboardPage() {
         });
       }
     }
+  };
+
+  // Sample event data with full details
+  const eventData = {
+    'dhaka-night-ride': {
+      id: 'dhaka-night-ride',
+      title: 'Dhaka Night Ride',
+      date: 'December 30, 2024 • 8:00 PM',
+      location: 'Dhanmondi 27',
+      price: 'Free',
+      description: 'Join us for an exciting night ride through the streets of Dhaka. Safety gear mandatory.',
+      fullDescription: 'Experience the thrill of riding through Dhaka\'s illuminated streets at night. This guided tour will take you through the most scenic and safe routes in the city. We\'ll start from Dhanmondi and make our way through key landmarks including Rabindra Sarobar, TSC, and the Parliament area. Professional marshals will ensure safety throughout the journey.',
+      requirements: ['Valid driving license', 'Safety helmet (mandatory)', 'Reflective vest', 'Working headlight and taillight'],
+      duration: '3 hours',
+      difficulty: 'Beginner',
+      maxParticipants: 50,
+      currentJoined: 23,
+      organizer: 'Dhaka Zone Team'
+    },
+    'safety-workshop': {
+      id: 'safety-workshop',
+      title: 'Safety Workshop',
+      date: 'January 5, 2025 • 2:00 PM',
+      location: 'Club House',
+      price: '৳500',
+      description: 'Learn essential riding safety tips and techniques from professional instructors.',
+      fullDescription: 'A comprehensive workshop covering all aspects of motorcycle safety. Learn from certified instructors about defensive riding techniques, emergency braking, cornering safety, and road hazard awareness. The workshop includes both theoretical sessions and practical demonstrations.',
+      requirements: ['Own motorcycle for practical session', 'Safety gear', 'Notebook for taking notes'],
+      duration: '4 hours',
+      difficulty: 'All levels',
+      maxParticipants: 30,
+      currentJoined: 18,
+      organizer: 'Safety Committee'
+    },
+    'coxs-bazar-tour': {
+      id: 'coxs-bazar-tour',
+      title: "Cox's Bazar Tour",
+      date: 'January 15-17, 2025',
+      location: "Cox's Bazar",
+      price: '৳15,000',
+      description: '3-day adventure tour to Cox\'s Bazar. Accommodation and meals included.',
+      fullDescription: 'An unforgettable 3-day motorcycle tour to the world\'s longest natural sea beach. The package includes accommodation at a beachfront resort, all meals, guided tours to local attractions, and support vehicle throughout the journey. Experience the beauty of Cox\'s Bazar, visit Inani Beach, and enjoy group bonding activities.',
+      requirements: ['Long-distance riding experience', 'Valid documents for travel', 'Personal medications', 'Casual and riding gear'],
+      duration: '3 days, 2 nights',
+      difficulty: 'Intermediate',
+      maxParticipants: 25,
+      currentJoined: 12,
+      organizer: 'Tour Committee'
+    }
+  };
+
+  const openEventModal = (eventId: string) => {
+    setSelectedEvent(eventData[eventId as keyof typeof eventData]);
+    setShowEventModal(true);
   };
 
 
@@ -351,12 +405,18 @@ export default function DashboardPage() {
                               <h4 className="text-white font-bold text-lg">Dhaka Night Ride</h4>
                               <p className="text-blue-300 text-sm">December 30, 2024 • 8:00 PM</p>
                             </div>
-                          </div>
-                          <p className="text-gray-300 text-sm mb-2">Join us for an exciting night ride through the streets of Dhaka. Safety gear mandatory.</p>
+                          </div>                          <p className="text-gray-300 text-sm mb-2">Join us for an exciting night ride through the streets of Dhaka. Safety gear mandatory.</p>
                           <div className="flex items-center space-x-4 text-xs">
                             <span className="bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full">📍 Dhanmondi 27</span>
                             <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">🎫 Free</span>
-                          </div>                        </div>                        <button 
+                            <span className="bg-purple-500/30 text-purple-300 px-2 py-1 rounded-full">👥 23/50 Joined</span>
+                          </div>
+                          <button 
+                            onClick={() => openEventModal('dhaka-night-ride')}
+                            className="mt-2 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+                          >
+                            Read More →
+                          </button></div>                        <button 
                           onClick={() => handleJoinEvent('dhaka-night-ride', 'Dhaka Night Ride')}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                             registeredEvents.has('dhaka-night-ride')
@@ -382,12 +442,18 @@ export default function DashboardPage() {
                               <h4 className="text-white font-bold text-lg">Safety Workshop</h4>
                               <p className="text-emerald-300 text-sm">January 5, 2025 • 2:00 PM</p>
                             </div>
-                          </div>
-                          <p className="text-gray-300 text-sm mb-2">Learn essential riding safety tips and techniques from professional instructors.</p>
+                          </div>                          <p className="text-gray-300 text-sm mb-2">Learn essential riding safety tips and techniques from professional instructors.</p>
                           <div className="flex items-center space-x-4 text-xs">
                             <span className="bg-emerald-500/30 text-emerald-300 px-2 py-1 rounded-full">📍 Club House</span>
                             <span className="bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded-full">🎫 ৳500</span>
-                          </div>                        </div>                        <button 
+                            <span className="bg-purple-500/30 text-purple-300 px-2 py-1 rounded-full">👥 18/30 Joined</span>
+                          </div>
+                          <button 
+                            onClick={() => openEventModal('safety-workshop')}
+                            className="mt-2 text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors"
+                          >
+                            Read More →
+                          </button></div>                        <button 
                           onClick={() => handleJoinEvent('safety-workshop', 'Safety Workshop')}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                             registeredEvents.has('safety-workshop')
@@ -413,12 +479,18 @@ export default function DashboardPage() {
                               <h4 className="text-white font-bold text-lg">Cox's Bazar Tour</h4>
                               <p className="text-orange-300 text-sm">January 15-17, 2025</p>
                             </div>
-                          </div>
-                          <p className="text-gray-300 text-sm mb-2">3-day adventure tour to Cox's Bazar. Accommodation and meals included.</p>
+                          </div>                          <p className="text-gray-300 text-sm mb-2">3-day adventure tour to Cox's Bazar. Accommodation and meals included.</p>
                           <div className="flex items-center space-x-4 text-xs">
                             <span className="bg-orange-500/30 text-orange-300 px-2 py-1 rounded-full">🏖️ Cox's Bazar</span>
                             <span className="bg-red-500/30 text-red-300 px-2 py-1 rounded-full">🎫 ৳15,000</span>
-                          </div>                        </div>                        <button 
+                            <span className="bg-purple-500/30 text-purple-300 px-2 py-1 rounded-full">👥 12/25 Joined</span>
+                          </div>
+                          <button 
+                            onClick={() => openEventModal('coxs-bazar-tour')}
+                            className="mt-2 text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors"
+                          >
+                            Read More →
+                          </button></div>                        <button 
                           onClick={() => handleJoinEvent('coxs-bazar-tour', "Cox's Bazar Tour")}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                             registeredEvents.has('coxs-bazar-tour')
@@ -460,15 +532,11 @@ export default function DashboardPage() {
                               <p className="text-gray-300 text-sm">December 15, 2024 • Completed</p>
                             </div>
                           </div>
-                          <p className="text-gray-300 text-sm mb-2">Successful annual meetup with 150+ members. Great networking and fun activities.</p>
-                          <div className="flex items-center space-x-4 text-xs">
+                          <p className="text-gray-300 text-sm mb-2">Successful annual meetup with 150+ members. Great networking and fun activities.</p>                          <div className="flex items-center space-x-4 text-xs">
                             <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">✅ 150 Attended</span>
                             <span className="bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full">📸 Photos Available</span>
                           </div>
                         </div>
-                        <button className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                          View Photos
-                        </button>
                       </div>
                     </div>
 
@@ -704,16 +772,143 @@ export default function DashboardPage() {
               <p className="text-white text-sm font-bold">Change Password</p>
               <p className="text-emerald-300 text-xs mt-1">Security settings</p>
             </div>
-          </button>
-        </div>
+          </button>        </div>
       </div>
+
+      {/* Event Details Modal */}
+      {showEventModal && selectedEvent && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-2 sm:p-6 shadow-2xl border border-white/20 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">{selectedEvent.title}</h2>
+              <button
+                onClick={() => setShowEventModal(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Event Header Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/5 rounded-lg p-3">
+                  <div className="flex items-center text-blue-300 mb-1">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-sm font-medium">Date & Time</span>
+                  </div>
+                  <p className="text-white font-semibold">{selectedEvent.date}</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3">
+                  <div className="flex items-center text-purple-300 mb-1">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    </svg>
+                    <span className="text-sm font-medium">Location</span>
+                  </div>
+                  <p className="text-white font-semibold">{selectedEvent.location}</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3">
+                  <div className="flex items-center text-green-300 mb-1">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                    <span className="text-sm font-medium">Price</span>
+                  </div>
+                  <p className="text-white font-semibold">{selectedEvent.price}</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3">
+                  <div className="flex items-center text-orange-300 mb-1">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span className="text-sm font-medium">Participants</span>
+                  </div>
+                  <p className="text-white font-semibold">{selectedEvent.currentJoined}/{selectedEvent.maxParticipants}</p>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="bg-white/5 rounded-lg p-4">
+                <h3 className="text-white font-bold mb-3 flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Event Description
+                </h3>
+                <p className="text-gray-300 leading-relaxed">{selectedEvent.fullDescription}</p>
+              </div>              {/* Event Details */}
+              <div className="bg-white/5 rounded-lg p-4">
+                <h4 className="text-white font-bold mb-2 flex items-center">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Duration
+                </h4>
+                <p className="text-gray-300">{selectedEvent.duration}</p>
+              </div>
+
+              {/* Requirements */}
+              <div className="bg-white/5 rounded-lg p-4">
+                <h4 className="text-white font-bold mb-3 flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                  Requirements
+                </h4>
+                <ul className="space-y-1">
+                  {selectedEvent.requirements.map((req: string, index: number) => (
+                    <li key={index} className="text-gray-300 flex items-center">
+                      <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
+                      {req}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Organizer */}
+              <div className="bg-white/5 rounded-lg p-4">
+                <h4 className="text-white font-bold mb-2 flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Organized by
+                </h4>
+                <p className="text-gray-300">{selectedEvent.organizer}</p>
+              </div>
+
+              {/* Action Button */}
+              <div className="flex justify-center pt-4">
+                <button 
+                  onClick={() => {
+                    handleJoinEvent(selectedEvent.id, selectedEvent.title);
+                    setShowEventModal(false);
+                  }}
+                  className={`px-8 py-3 rounded-lg text-lg font-medium transition-colors ${
+                    registeredEvents.has(selectedEvent.id)
+                      ? 'bg-green-500 hover:bg-red-500 text-white'
+                      : 'bg-blue-500 hover:bg-blue-600 text-white'
+                  }`}
+                >
+                  {registeredEvents.has(selectedEvent.id) ? 'Registered - Click to Unregister' : "Join This Event"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Password Change Modal */}
       {showPasswordModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20 max-w-md w-full">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">Change Password</h2>              <button
+              <h2 className="text-2xl font-bold text-white">Change Password</h2>             
+               <button
                 onClick={() => {
                   setShowPasswordModal(false);
                   setPasswordError('');
