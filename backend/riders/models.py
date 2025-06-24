@@ -103,6 +103,7 @@ class Rider(models.Model):
     bio = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=100, blank=True)
     bike_model = models.CharField(max_length=100, blank=True)
+    custom_user_type = models.CharField(max_length=100, blank=True, help_text="Custom user type/title (e.g., 'Adventure Rider', 'Speed Enthusiast', etc.)")
     profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     membership_status = models.CharField(max_length=20, choices=MEMBERSHIP_STATUS_CHOICES, default='pending')
     zone = models.ForeignKey(Zone, on_delete=models.SET_NULL, null=True, blank=True)

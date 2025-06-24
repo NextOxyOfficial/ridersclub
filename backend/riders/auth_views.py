@@ -133,8 +133,7 @@ def user_profile_view(request):
     if not bike_info and rider and rider.bike_model:
         bike_info = rider.bike_model
     if not address and rider and rider.location:
-        address = rider.location
-      # Prepare response data
+        address = rider.location    # Prepare response data
     response_data = {
         'id': user.id,
         'phone': user.username,
@@ -145,6 +144,7 @@ def user_profile_view(request):
             'name': zone.name
         } if zone else None,
         'blood_group': blood_group,
+        'custom_user_type': rider.custom_user_type if rider else None,
     }
     
     # Only include motorcycle if it has data
@@ -195,20 +195,20 @@ def change_password_view(request):
 @permission_classes([IsAuthenticated])
 def update_profile_view(request):
     """
-    Update user profile (zone and bike model)
+    Update user profile (zone, bike model, and custom user type)
     """
     user = request.user
     
     try:
         rider = Rider.objects.get(user=user)
-    except Rider.DoesNotExist:
-        return Response(
+    except Rider.DoesNotExist:        return Response(
             {'detail': 'Rider profile not found'}, 
             status=status.HTTP_404_NOT_FOUND
         )
     
     zone_id = request.data.get('zone_id')
     bike_model = request.data.get('bike_model')
+    custom_user_type = request.data.get('custom_user_type')
     
     # Update zone if provided
     if zone_id is not None:
@@ -227,6 +227,10 @@ def update_profile_view(request):
     # Update bike model if provided
     if bike_model is not None:
         rider.bike_model = bike_model.strip() if bike_model.strip() else None
+    
+    # Update custom user type if provided
+    if custom_user_type is not None:
+        rider.custom_user_type = custom_user_type.strip() if custom_user_type.strip() else None
     
     rider.save()
     
@@ -252,8 +256,7 @@ def update_profile_view(request):
             application.save()
     except MembershipApplication.DoesNotExist:
         pass
-      # Return updated profile data
-    # Get blood group from MembershipApplication
+      # Return updated profile data    # Get blood group from MembershipApplication
     blood_group = None
     try:
         application = MembershipApplication.objects.get(user=user)
@@ -272,6 +275,7 @@ def update_profile_view(request):
         } if rider.zone else None,
         'blood_group': blood_group,
         'bike_model': rider.bike_model,
+        'custom_user_type': rider.custom_user_type,
     }
     
     return Response({

@@ -60,6 +60,7 @@ export interface UserProfile {
   } | null;
   blood_group: string | null;
   bike_model?: string; // Optional field, only present if user has motorcycle data
+  custom_user_type?: string; // Optional field for custom user type/title
 }
 
 export interface ChangePasswordData {
