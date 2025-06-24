@@ -9,10 +9,11 @@ export default function DashboardPage() {
   const [user, setUser] = useState<UserProfile | null>(null);  const [benefits, setBenefits] = useState<Benefit[]>([]);
   const [benefitsLoading, setBenefitsLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);  const [error, setError] = useState<string>('');  const [activeEventTab, setActiveEventTab] = useState<'upcoming' | 'previous'>('upcoming');
-  const [registeredEvents, setRegisteredEvents] = useState<Set<string>>(new Set());
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [registeredEvents, setRegisteredEvents] = useState<Set<string>>(new Set());  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [showEventModal, setShowEventModal] = useState(false);const [passwordData, setPasswordData] = useState<ChangePasswordData & { confirm_password: string }>({
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [selectedEventPhotos, setSelectedEventPhotos] = useState<any>(null);const [passwordData, setPasswordData] = useState<ChangePasswordData & { confirm_password: string }>({
     old_password: '',
     new_password: '',
     confirm_password: '',
@@ -118,6 +119,32 @@ export default function DashboardPage() {
       currentJoined: 23,
       organizer: 'Dhaka Zone Team'
     },
+    'annual-club-meet-2024': {
+      id: 'annual-club-meet-2024',
+      title: 'Annual Club Meet 2024',
+      date: 'December 15, 2024 • Completed',
+      description: 'Successful annual meetup with 150+ members. Great networking and fun activities.',
+      photos: [
+        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1517654978162-8321df66b51c?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1502741224143-90386d7f8c82?w=800&h=600&fit=crop'
+      ]
+    },
+    'chittagong-hill-ride': {
+      id: 'chittagong-hill-ride',
+      title: 'Chittagong Hill Ride',
+      date: 'November 28, 2024 • Completed',
+      description: 'Amazing hill track adventure with scenic views and challenging routes.',
+      photos: [
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1464822759844-d150baec93c5?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=800&h=600&fit=crop'
+      ]
+    },
     'safety-workshop': {
       id: 'safety-workshop',
       title: 'Safety Workshop',
@@ -149,10 +176,17 @@ export default function DashboardPage() {
       organizer: 'Tour Committee'
     }
   };
-
   const openEventModal = (eventId: string) => {
     setSelectedEvent(eventData[eventId as keyof typeof eventData]);
     setShowEventModal(true);
+  };
+
+  const openPhotoModal = (eventId: string) => {
+    const event = eventData[eventId as keyof typeof eventData];
+    if (event && 'photos' in event) {
+      setSelectedEventPhotos(event);
+      setShowPhotoModal(true);
+    }
   };
 
 
@@ -534,7 +568,10 @@ export default function DashboardPage() {
                           </div>
                           <p className="text-gray-300 text-sm mb-2">Successful annual meetup with 150+ members. Great networking and fun activities.</p>                          <div className="flex items-center space-x-4 text-xs">
                             <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">✅ 150 Attended</span>
-                            <span className="bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full">📸 Photos Available</span>
+                            <span className="bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full cursor-pointer hover:bg-blue-500/50 transition-colors" 
+                                  onClick={() => openPhotoModal('annual-club-meet-2024')}>
+                              📸 View Photos
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -551,9 +588,12 @@ export default function DashboardPage() {
                               <h4 className="text-white font-bold text-lg">Chittagong Hill Ride</h4>
                               <p className="text-purple-300 text-sm">November 28, 2024 • Completed</p>
                             </div>
-                          </div>                          <p className="text-gray-300 text-sm mb-2">Amazing hill track adventure with scenic views and challenging routes.</p>
-                          <div className="flex items-center space-x-4 text-xs">
+                          </div>                          <p className="text-gray-300 text-sm mb-2">Amazing hill track adventure with scenic views and challenging routes.</p>                          <div className="flex items-center space-x-4 text-xs">
                             <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">✅ 45 Riders</span>
+                            <span className="bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full cursor-pointer hover:bg-blue-500/50 transition-colors" 
+                                  onClick={() => openPhotoModal('chittagong-hill-ride')}>
+                              📸 View Photos
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -881,9 +921,53 @@ export default function DashboardPage() {
                   }`}
                 >
                   {registeredEvents.has(selectedEvent.id) ? 'Registered - Click to Unregister' : "Join This Event"}
-                </button>
-              </div>
+                </button>              </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Photo Gallery Modal */}
+      {showPhotoModal && selectedEventPhotos && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-6 shadow-2xl border border-white/20 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">{selectedEventPhotos.title} - Photo Gallery</h2>
+              <button
+                onClick={() => setShowPhotoModal(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {selectedEventPhotos.photos && selectedEventPhotos.photos.map((photo: string, index: number) => (
+                <div key={index} className="relative group overflow-hidden rounded-lg aspect-video">
+                  <img
+                    src={photo}
+                    alt={`${selectedEventPhotos.title} photo ${index + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-2 left-2 text-white text-sm font-medium">
+                      Photo {index + 1}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {selectedEventPhotos.photos && selectedEventPhotos.photos.length === 0 && (
+              <div className="text-center text-gray-400 py-8">
+                <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p>No photos available for this event</p>
+              </div>
+            )}
           </div>
         </div>
       )}
