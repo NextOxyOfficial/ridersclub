@@ -231,7 +231,7 @@ export default function DashboardPage() {
         {/* Special Offers Section */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4 px-2">
-            <h3 className="text-lg font-bold text-white">Exclusive Benefits</h3>
+            <h3 className="text-xl font-bold text-white">Exclusive Benefits For Rider's Club Members</h3>
             <div className="flex items-center space-x-1">
               <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
               <span className="text-yellow-400 text-xs font-medium">New</span>
@@ -243,19 +243,18 @@ export default function DashboardPage() {
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur-sm opacity-20"></div>
             <div className="relative bg-gradient-to-br from-white/95 to-white/85 backdrop-blur-xl rounded-3xl p-6 border border-emerald-200/50 shadow-2xl">
               <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center mb-4">
+                <div className="flex-1">                  
+                  <div className="flex items-center mb-1">
                     <div className="w-14 h-14 bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-2xl flex items-center justify-center mr-4 shadow-xl">
                       <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
                       </svg>
                     </div>
                     <div>
                       <h4 className="text-gray-900 font-black text-2xl">5% Discount</h4>
-                      <div className="flex items-center space-x-2">
-                        <div className="px-2 py-1 bg-emerald-100 rounded-full">
-                          <span className="text-emerald-700 text-xs font-bold">MEMBER EXCLUSIVE</span>
-                        </div>
+                      <div className="px-2 py-1 bg-emerald-100 rounded-full inline-block">
+                        <span className="text-emerald-700 text-xs font-bold">Valid till Dec 31, 2025</span>
                       </div>
                     </div>
                   </div>
@@ -267,36 +266,34 @@ export default function DashboardPage() {
                     </h5>
                     <p className="text-gray-600 text-sm font-medium">Premium motorcycle services • Parts • Maintenance</p>
                   </div>
-                  
-                  <div className="flex items-center text-sm text-emerald-700 bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3 rounded-xl inline-flex border border-emerald-200">
+                    <div className="flex items-center text-sm text-emerald-700 bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3 rounded-xl inline-flex border border-emerald-200">
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span className="font-semibold">Valid for all services & parts</span>
                   </div>
+                  
+                  <div className="flex items-center text-sm text-gray-500 mt-3">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-medium">Show membership card while billing</span>
+                  </div>
                 </div>
-                
-                <div className="ml-6">
+                  <div className="ml-4">
                   <div className="relative">
-                    <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-3xl px-8 py-10 text-center shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                      <div className="text-5xl font-black text-white mb-2">5%</div>
-                      <div className="text-sm text-emerald-100 uppercase tracking-widest font-bold">OFF</div>
+                    <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl px-6 py-6 text-center shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                      <div className="text-3xl font-black text-white mb-1">5%</div>
+                      <div className="text-xs text-emerald-100 uppercase tracking-wide font-bold">OFF</div>
                     </div>
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
                       <span className="text-yellow-900 text-xs font-bold">!</span>
                     </div>
                   </div>
                 </div>
               </div>
-              
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="font-medium">Show membership card to redeem</span>
-                  </div>
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                <div className="flex justify-end">
                   <button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-sm font-bold px-8 py-3 rounded-2xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-1">
                     Visit Shop
                   </button>
