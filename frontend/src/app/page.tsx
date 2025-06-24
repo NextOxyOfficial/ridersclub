@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { apiService } from '../services/api';
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Check if user is logged in by checking for auth token
-    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-    setIsLoggedIn(!!token);
+    // Check if user is logged in using the API service
+    setIsLoggedIn(apiService.isAuthenticated());
   }, []);
 
   return (
@@ -25,12 +25,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 rounded-lg opacity-0 group-hover:opacity-20 transition duration-300"></div>
             </div>
           </div>              <div className="space-x-4">
-            <Link
-              href="/benefits"
-              className="bg-transparent border border-purple-500/30 hover:bg-purple-600/20 text-purple-300 hover:text-white font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              Benefits
-            </Link>
+            
             <Link
               href="/join"
               className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
