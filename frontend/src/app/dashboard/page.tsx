@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { apiService, UserProfile, ChangePasswordData, Benefit, RideEvent, Zone } from '../../services/api';
+import { apiService, UserProfile, ChangePasswordData, Benefit, RideEvent, Zone, Notice } from '../../services/api';
 
 export default function DashboardPage() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -33,26 +33,23 @@ export default function DashboardPage() {
   const [profileEditData, setProfileEditData] = useState({
     zone_id: '',
     bike_model: ''
-  });
-  const [profileEditError, setProfileEditError] = useState<string>('');
+  });  const [profileEditError, setProfileEditError] = useState<string>('');
   const [profileEditSuccess, setProfileEditSuccess] = useState<string>('');
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+    // Notice states
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [noticesLoading, setNoticesLoading] = useState(true);
   
   const router = useRouter();useEffect(() => {
     const checkAuth = async () => {
       if (!apiService.isAuthenticated()) {
         router.push('/login');
         return;
-      }
-
-      try {
-        const [userProfile, allBenefits, allEvents] = await Promise.all([
+      }      try {        const [userProfile, allBenefits, allEvents] = await Promise.all([
           apiService.getCurrentUser(),
           apiService.fetchBenefits(), // Fetch all benefits instead of just featured
-          apiService.fetchEvents() // Fetch all events
-        ]);
-        
-        setUser(userProfile);
+          apiService.fetchEvents(), // Fetch all events
+        ]);        setUser(userProfile);
         setBenefits(allBenefits); // Show all benefits
         setEvents(allEvents);
           // Separate ongoing, upcoming and past events
@@ -78,8 +75,7 @@ export default function DashboardPage() {
           setError('Failed to load dashboard data');
           // If token is invalid, redirect to login
           localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          router.push('/login');
+          localStorage.removeItem('refresh_token');          router.push('/login');
         }
       } finally {
         setIsLoading(false);
@@ -88,8 +84,26 @@ export default function DashboardPage() {
       }
     };
 
-    checkAuth();
-  }, [router]);
+    checkAuth();  }, [router]);
+
+  // Separate useEffect for fetching notices (non-blocking)
+  useEffect(() => {
+    const fetchNotices = async () => {
+      try {
+        const activeNotices = await apiService.fetchActiveNotices();
+        setNotices(activeNotices);
+      } catch (error) {
+        console.error('Error fetching notices:', error);
+        // Don't show error to user, just log it
+        setNotices([]); // Set empty array as fallback
+      } finally {
+        setNoticesLoading(false);
+      }
+    };
+
+    fetchNotices();
+  }, []);
+
   const handleUseBenefit = async (benefitId: number, websiteUrl?: string) => {
     try {
       await apiService.useBenefit(benefitId);
@@ -312,9 +326,7 @@ export default function DashboardPage() {
     }));
     
     if (profileEditError) {
-      setProfileEditError('');
-    }
-  };
+      setProfileEditError('');    }  };
 
   if (isLoading) {
     return (
@@ -452,8 +464,36 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-          </div>          
+          </div>                </div>        {/* Notice Slider */}
+        {!noticesLoading && notices.length > 0 && (
+          <div className="mb-6">
+            <div className="bg-gradient-to-r from-red-500/20 to-orange-500/20 backdrop-blur-xl rounded-3xl p-4 border border-red-400/30 shadow-2xl overflow-hidden relative">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-red-400 to-orange-500 rounded-xl flex items-center justify-center mr-3 flex-shrink-0">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="whitespace-nowrap">
+                    <div 
+                      className="inline-block animate-marquee"
+                      style={{
+                        animation: 'marquee 15s linear infinite'
+                      }}
+                    >
+                      {notices.map((notice, index) => (
+                        <span key={notice.id} className="text-white text-sm mr-8">
+                          <span className="font-bold">{notice.title}:</span> {notice.message}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+        )}
 
         {/* Events Section with Tabs */}
         <div className="mb-6">

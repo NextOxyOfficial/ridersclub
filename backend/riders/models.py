@@ -268,3 +268,45 @@ class BenefitUsage(models.Model):
 
     class Meta:
         ordering = ['-used_at']
+
+class Notice(models.Model):
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
+    ]
+    
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
+    is_active = models.BooleanField(default=True)
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField(null=True, blank=True, help_text="Leave blank for permanent notice")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_notices')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.priority})"
+
+    @property
+    def is_valid(self):
+        """Check if notice is currently valid"""
+        from django.utils import timezone
+        now = timezone.now()
+        
+        if not self.is_active:
+            return False
+            
+        # Handle case where start_date might be None (during object creation)
+        if self.start_date and self.start_date > now:
+            return False
+            
+        if self.end_date and self.end_date < now:
+            return False
+            
+        return True
+
+    class Meta:
+        ordering = ['-priority', '-created_at']

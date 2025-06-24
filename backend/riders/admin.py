@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Rider, RideEvent, Post, Zone, MembershipApplication, BenefitCategory, Benefit, BenefitUsage, EventPhoto
+from .models import Rider, RideEvent, Post, Zone, MembershipApplication, BenefitCategory, Benefit, BenefitUsage, EventPhoto, Notice
 
 @admin.register(Zone)
 class ZoneAdmin(admin.ModelAdmin):
@@ -163,3 +163,29 @@ class EventPhotoAdmin(admin.ModelAdmin):
             'fields': ('uploaded_by', 'uploaded_at')
         }),
     )
+
+@admin.register(Notice)
+class NoticeAdmin(admin.ModelAdmin):
+    list_display = ['title', 'priority', 'is_active', 'is_valid', 'created_by', 'created_at', 'end_date']
+    list_filter = ['priority', 'is_active', 'created_at', 'end_date']
+    search_fields = ['title', 'message']
+    list_editable = ['is_active', 'priority']
+    readonly_fields = ['created_by', 'created_at', 'updated_at', 'start_date', 'is_valid']
+    
+    fieldsets = (
+        ('Notice Content', {
+            'fields': ('title', 'message', 'priority')
+        }),
+        ('Visibility Settings', {
+            'fields': ('is_active', 'end_date')
+        }),
+        ('Metadata', {
+            'fields': ('created_by', 'start_date', 'created_at', 'updated_at', 'is_valid'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # If creating new notice
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Rider, RideEvent, Post, Zone, MembershipApplication, BenefitCategory, Benefit, BenefitUsage, EventPhoto
+from .models import Rider, RideEvent, Post, Zone, MembershipApplication, BenefitCategory, Benefit, BenefitUsage, EventPhoto, Notice
 
 class ZoneSerializer(serializers.ModelSerializer):
     class Meta:
@@ -182,3 +182,16 @@ class BenefitUsageSerializer(serializers.ModelSerializer):
         model = BenefitUsage
         fields = ['id', 'rider', 'rider_name', 'benefit', 'benefit_title', 'partner_name', 'used_at', 'notes']
         read_only_fields = ['id', 'used_at']
+
+class NoticeSerializer(serializers.ModelSerializer):
+    created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
+    is_valid = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = Notice
+        fields = [
+            'id', 'title', 'message', 'priority', 'is_active', 'start_date', 
+            'end_date', 'created_by', 'created_by_name', 'is_valid', 
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_by', 'created_at', 'updated_at']

@@ -159,6 +159,21 @@ export interface RideEvent {
   updated_at: string;
 }
 
+export interface Notice {
+  id: number;
+  title: string;
+  message: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  is_active: boolean;
+  start_date: string;
+  end_date?: string;
+  created_by: number;
+  created_by_name: string;
+  is_valid: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export const apiService = {
   // Fetch zones
   async fetchZones(): Promise<Zone[]> {
@@ -524,6 +539,30 @@ export const apiService = {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || errorData.detail || 'Failed to leave event');
+    }    return response.json();
+  },
+
+  // Notice-related methods
+  async fetchActiveNotices(): Promise<Notice[]> {
+    const response = await fetch(`${API_BASE_URL}/notices/active/`);
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch notices');
+    }
+
+    return response.json();
+  },
+
+  async fetchAllNotices(): Promise<Notice[]> {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_BASE_URL}/notices/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch notices');
     }
 
     return response.json();

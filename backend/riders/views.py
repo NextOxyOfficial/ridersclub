@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db import models
-from .models import Rider, RideEvent, Post, Zone, MembershipApplication, BenefitCategory, Benefit, BenefitUsage
-from .serializers import RiderSerializer, RideEventSerializer, PostSerializer, ZoneSerializer, MembershipApplicationSerializer, BenefitCategorySerializer, BenefitSerializer, BenefitUsageSerializer
+from .models import Rider, RideEvent, Post, Zone, MembershipApplication, BenefitCategory, Benefit, BenefitUsage, Notice
+from .serializers import RiderSerializer, RideEventSerializer, PostSerializer, ZoneSerializer, MembershipApplicationSerializer, BenefitCategorySerializer, BenefitSerializer, BenefitUsageSerializer, NoticeSerializer
 
 class ZoneViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Zone.objects.filter(is_active=True)
@@ -381,3 +381,65 @@ class BenefitUsageViewSet(viewsets.ReadOnlyModelViewSet):
         if hasattr(self.request.user, 'rider'):
             return BenefitUsage.objects.filter(rider=self.request.user.rider).select_related('benefit', 'rider__user')
         return BenefitUsage.objects.none()
+
+class NoticeViewSet(viewsets.ModelViewSet):
+    queryset = Notice.objects.all()
+    serializer_class = NoticeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # For regular users, only show active and valid notices
+        if not self.request.user.is_staff:
+            now = timezone.now()
+            return Notice.objects.filter(
+                is_active=True,
+                start_date__lte=now
+            ).filter(
+                models.Q(end_date__isnull=True) | models.Q(end_date__gt=now)
+            )
+        # For staff users, show all notices
+        return Notice.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        # Only staff can create notices
+        if not request.user.is_staff:
+            return Response(
+                {'detail': 'Permission denied. Only staff can create notices.'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        # Only staff can update notices
+        if not request.user.is_staff:
+            return Response(
+                {'detail': 'Permission denied. Only staff can update notices.'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        # Only staff can delete notices
+        if not request.user.is_staff:
+            return Response(
+                {'detail': 'Permission denied. Only staff can delete notices.'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
+
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def active(self, request):
+        """Get only active and valid notices for the notice slider"""
+        now = timezone.now()
+        notices = Notice.objects.filter(
+            is_active=True,
+            start_date__lte=now
+        ).filter(
+            models.Q(end_date__isnull=True) | models.Q(end_date__gt=now)
+        ).order_by('-priority', '-created_at')
+        
+        serializer = self.get_serializer(notices, many=True)
+        return Response(serializer.data)
