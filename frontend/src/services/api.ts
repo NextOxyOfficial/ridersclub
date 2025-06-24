@@ -46,7 +46,6 @@ export interface LoginResponse {
     id: number;
     phone: string;
     full_name: string;
-    email: string;
   };
 }
 
@@ -54,12 +53,13 @@ export interface UserProfile {
   id: number;
   phone: string;
   full_name: string;
-  email: string;
   membership_status: string;
   zone: {
     id: number;
     name: string;
-  };
+  } | null;
+  blood_group: string | null;
+  bike_model?: string; // Optional field, only present if user has motorcycle data
 }
 
 export interface ChangePasswordData {

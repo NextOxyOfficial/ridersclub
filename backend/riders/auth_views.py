@@ -113,18 +113,45 @@ def user_profile_view(request):
     except Rider.DoesNotExist:
         membership_status = 'pending'
         zone = None
+        rider = None
     
-    return Response({
+    # Try to get additional details from MembershipApplication
+    blood_group = None
+    bike_info = None
+    address = None
+    
+    try:
+        application = MembershipApplication.objects.get(user=user)
+        blood_group = application.blood_group
+        if application.has_motorbike and application.motorcycle_brand and application.motorcycle_model:
+            bike_info = f"{application.motorcycle_brand} {application.motorcycle_model}"
+        address = application.address
+    except MembershipApplication.DoesNotExist:
+        pass
+    
+    # Fallback to rider data if available
+    if not bike_info and rider and rider.bike_model:
+        bike_info = rider.bike_model
+    if not address and rider and rider.location:
+        address = rider.location
+      # Prepare response data
+    response_data = {
         'id': user.id,
         'phone': user.username,
         'full_name': f"{user.first_name} {user.last_name}".strip() or user.username,
-        'email': user.email,
         'membership_status': membership_status,
         'zone': {
             'id': zone.id,
             'name': zone.name
-        } if zone else None
-    })
+        } if zone else None,
+        'blood_group': blood_group,
+    }
+    
+    # Only include motorcycle if it has data
+    if bike_info:
+        response_data['bike_model'] = bike_info
+    
+    return Response(response_data)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
