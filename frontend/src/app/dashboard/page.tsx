@@ -454,24 +454,18 @@ export default function DashboardPage() {
                                   } px-2 py-1 rounded-full`}>
                                     🎫 {event.price === 0 ? 'Free' : `৳${event.price}`}
                                   </span>
-                                </div>
-                                <div className="flex items-center justify-between mt-2">
+                                </div>                                <div className="flex items-center justify-between mt-2">
                                   <button 
                                     onClick={() => openEventModal(event.id)}
                                     className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
                                   >
                                     Read More →
                                   </button>
-                                  <button 
-                                    onClick={() => handleJoinEvent(event.id, event.title)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                      event.user_registered
-                                        ? 'bg-green-500 hover:bg-red-500 text-white'
-                                        : 'bg-red-500 hover:bg-red-600 text-white'
-                                    }`}
-                                  >
-                                    {event.user_registered ? 'Registered' : "Join Now"}
-                                  </button>                                </div>
+                                  {/* Hide Join Now button for LIVE events */}
+                                  <div className="text-red-300 text-sm font-medium bg-red-500/20 px-4 py-2 rounded-lg">
+                                    Event in Progress
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
