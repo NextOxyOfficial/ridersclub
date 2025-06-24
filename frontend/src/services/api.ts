@@ -136,7 +136,6 @@ export interface RideEvent {
   location: string;
   price: number;
   duration: string;
-  difficulty: string;
   requirements: string;
   max_participants: number;
   organizer_name: string;

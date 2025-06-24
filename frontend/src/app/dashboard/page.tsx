@@ -830,17 +830,7 @@ export default function DashboardPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Duration
-                  </h4>
-                  <p className="text-gray-300">{selectedEvent.duration}</p>
-                </div>
-                <div className="bg-white/5 rounded-lg p-4">
-                  <h4 className="text-white font-bold mb-2 flex items-center">
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
-                    </svg>
-                    Difficulty
-                  </h4>
-                  <p className="text-gray-300">{selectedEvent.difficulty}</p>
+                  </h4>                  <p className="text-gray-300">{selectedEvent.duration}</p>
                 </div>
               </div>
 

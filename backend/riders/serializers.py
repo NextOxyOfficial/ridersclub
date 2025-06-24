@@ -47,7 +47,7 @@ class RideEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = RideEvent
         fields = ['id', 'title', 'description', 'location', 'date', 'time', 'end_date', 
-                 'price', 'duration', 'difficulty', 'requirements', 'status', 'organizer', 
+                 'price', 'duration', 'requirements', 'status', 'organizer', 
                  'organizer_name', 'participants', 'participant_count', 'current_joined', 
                  'max_participants', 'photos', 'is_featured', 'is_upcoming', 'is_past', 
                  'can_join', 'user_registered', 'created_at', 'updated_at']

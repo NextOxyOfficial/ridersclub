@@ -46,28 +46,24 @@ class Command(BaseCommand):
         # Create upcoming events
         upcoming_events = [
             {
-                'title': 'Dhaka Night Ride',
-                'description': 'Join us for an exciting night ride through the streets of Dhaka. Safety gear mandatory.',
+                'title': 'Dhaka Night Ride',                'description': 'Join us for an exciting night ride through the streets of Dhaka. Safety gear mandatory.',
                 'location': 'Dhanmondi 27',
                 'date': (timezone.now() + timedelta(days=7)).date(),
                 'time': time(20, 0),  # 8:00 PM
                 'price': 0.00,
                 'duration': '3 hours',
-                'difficulty': 'beginner',
                 'requirements': 'Valid driving license\nSafety helmet (mandatory)\nReflective vest\nWorking headlight and taillight',
                 'organizer_name': 'Dhaka Zone Team',
                 'max_participants': 50,
                 'status': 'upcoming'
             },
             {
-                'title': 'Safety Workshop',
-                'description': 'Learn essential riding safety tips and techniques from professional instructors.',
+                'title': 'Safety Workshop',                'description': 'Learn essential riding safety tips and techniques from professional instructors.',
                 'location': 'Club House',
                 'date': (timezone.now() + timedelta(days=14)).date(),
                 'time': time(14, 0),  # 2:00 PM
                 'price': 500.00,
                 'duration': '4 hours',
-                'difficulty': 'beginner',
                 'requirements': 'Own motorcycle for practical session\nSafety gear\nNotebook for taking notes',
                 'organizer_name': 'Safety Committee',
                 'max_participants': 30,
@@ -79,10 +75,8 @@ class Command(BaseCommand):
                 'location': "Cox's Bazar",
                 'date': (timezone.now() + timedelta(days=28)).date(),
                 'time': time(8, 0),  # 8:00 AM
-                'end_date': timezone.now() + timedelta(days=30),
-                'price': 15000.00,
+                'end_date': timezone.now() + timedelta(days=30),                'price': 15000.00,
                 'duration': '3 days, 2 nights',
-                'difficulty': 'intermediate',
                 'requirements': 'Long-distance riding experience\nValid documents for travel\nPersonal medications\nCasual and riding gear',
                 'organizer_name': 'Tour Committee',
                 'max_participants': 25,
@@ -97,10 +91,8 @@ class Command(BaseCommand):
                 'description': 'Successful annual meetup with 150+ members. Great networking and fun activities.',
                 'location': 'Dhaka Convention Center',
                 'date': (timezone.now() - timedelta(days=30)).date(),
-                'time': time(10, 0),  # 10:00 AM
-                'price': 0.00,
+                'time': time(10, 0),  # 10:00 AM                'price': 0.00,
                 'duration': '6 hours',
-                'difficulty': 'beginner',
                 'requirements': 'Just bring yourself and enthusiasm!',
                 'organizer_name': 'Event Committee',
                 'max_participants': 200,
@@ -119,10 +111,8 @@ class Command(BaseCommand):
                 'description': 'Amazing hill track adventure with scenic views and challenging routes.',
                 'location': 'Chittagong Hill Tracts',
                 'date': (timezone.now() - timedelta(days=45)).date(),
-                'time': time(6, 0),  # 6:00 AM
-                'price': 2500.00,
+                'time': time(6, 0),  # 6:00 AM                'price': 2500.00,
                 'duration': '12 hours',
-                'difficulty': 'advanced',
                 'requirements': 'Advanced riding skills\nOff-road capable motorcycle\nFirst aid kit\nFull protective gear',
                 'organizer_name': 'Adventure Club',
                 'max_participants': 20,
@@ -139,10 +129,8 @@ class Command(BaseCommand):
                 'description': 'Hands-on motorcycle maintenance and repair workshop for all skill levels.',
                 'location': 'Technical Training Center',
                 'date': (timezone.now() - timedelta(days=60)).date(),
-                'time': time(9, 0),  # 9:00 AM
-                'price': 1000.00,
+                'time': time(9, 0),  # 9:00 AM                'price': 1000.00,
                 'duration': '5 hours',
-                'difficulty': 'intermediate',
                 'requirements': 'Basic tools\nOwn motorcycle preferred\nWork clothes',
                 'organizer_name': 'Technical Team',
                 'max_participants': 15,

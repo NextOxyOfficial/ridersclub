@@ -120,12 +120,6 @@ class RideEvent(models.Model):
         ('cancelled', 'Cancelled'),
     ]
     
-    DIFFICULTY_CHOICES = [
-        ('beginner', 'Beginner'),
-        ('intermediate', 'Intermediate'),
-        ('advanced', 'Advanced'),        ('expert', 'Expert'),
-    ]
-    
     title = models.CharField(max_length=200)
     description = models.TextField()
     location = models.CharField(max_length=200)
@@ -134,7 +128,6 @@ class RideEvent(models.Model):
     end_date = models.DateTimeField(blank=True, null=True, help_text="For multi-day events")
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Event price in BDT")
     duration = models.CharField(max_length=100, blank=True, help_text="Event duration (e.g., '3 hours', '3 days, 2 nights')")
-    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default='beginner')
     requirements = models.TextField(blank=True, help_text="Requirements for the event")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='upcoming')
     organizer = models.ForeignKey(Rider, on_delete=models.CASCADE, related_name='organized_events')
