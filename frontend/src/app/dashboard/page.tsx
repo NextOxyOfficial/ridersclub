@@ -6,11 +6,11 @@ import { useRouter } from 'next/navigation';
 import { apiService, UserProfile, ChangePasswordData, Benefit } from '../../services/api';
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [benefits, setBenefits] = useState<Benefit[]>([]);
+  const [user, setUser] = useState<UserProfile | null>(null);  const [benefits, setBenefits] = useState<Benefit[]>([]);
   const [benefitsLoading, setBenefitsLoading] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);  const [error, setError] = useState<string>('');
+  const [activeEventTab, setActiveEventTab] = useState<'upcoming' | 'previous'>('upcoming');
+  const [registeredEvents, setRegisteredEvents] = useState<Set<string>>(new Set());
   const [showPasswordModal, setShowPasswordModal] = useState(false);const [passwordData, setPasswordData] = useState<ChangePasswordData & { confirm_password: string }>({
     old_password: '',
     new_password: '',
@@ -60,8 +60,28 @@ export default function DashboardPage() {
       if (websiteUrl) {
         window.open(websiteUrl, '_blank');
       }
+    }  };  const handleJoinEvent = async (eventId: string, eventName: string) => {
+    // Immediately register the user (no loading state)
+    setRegisteredEvents(prev => new Set(prev).add(eventId));
+    
+    try {
+      // Here you would make the actual API call to join the event
+      // await apiService.joinEvent(eventId);
+      
+      console.log(`Successfully registered for event: ${eventName}`);
+      
+      // Event stays in registered state
+    } catch (error) {
+      console.error('Error registering for event:', error);
+      // Remove from registered state on error
+      setRegisteredEvents(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(eventId);
+        return newSet;
+      });
     }
   };
+
 
   const handleLogout = async () => {
     try {
@@ -246,8 +266,255 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>          
-          
-        </div>        {/* Special Offers Section */}
+            </div>
+
+        {/* Events Section with Tabs */}
+        <div className="mb-6">
+          <div className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl rounded-3xl p-3 border border-white/30 shadow-2xl">
+            {/* Tab Headers */}
+            <div className="flex bg-white/10 backdrop-blur-sm rounded-2xl p-1 mb-6">
+              <button 
+                onClick={() => setActiveEventTab('upcoming')}
+                className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 ${
+                  activeEventTab === 'upcoming' 
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg' 
+                    : 'text-blue-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span>Upcoming Events</span>
+                </div>
+              </button>
+              <button 
+                onClick={() => setActiveEventTab('previous')}
+                className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 ${
+                  activeEventTab === 'previous' 
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg' 
+                    : 'text-blue-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Previous Events</span>
+                </div>
+              </button>
+            </div>
+
+            {/* Tab Content */}
+            <div className="min-h-[200px]">
+              {activeEventTab === 'upcoming' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-white">Upcoming Events</h3>
+                    <div className="flex items-center space-x-1">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                      <span className="text-blue-400 text-xs font-medium">3 Events Scheduled</span>
+                    </div>
+                  </div>
+                  
+                  {/* Sample Upcoming Events */}
+                  <div className="space-y-3">
+                    <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl p-4 border border-blue-400/30">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-2">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center mr-3">
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <h4 className="text-white font-bold text-lg">Dhaka Night Ride</h4>
+                              <p className="text-blue-300 text-sm">December 30, 2024 • 8:00 PM</p>
+                            </div>
+                          </div>
+                          <p className="text-gray-300 text-sm mb-2">Join us for an exciting night ride through the streets of Dhaka. Safety gear mandatory.</p>
+                          <div className="flex items-center space-x-4 text-xs">
+                            <span className="bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full">📍 Dhanmondi 27</span>
+                            <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">🎫 Free</span>
+                          </div>                        </div>                        <button 
+                          onClick={() => handleJoinEvent('dhaka-night-ride', 'Dhaka Night Ride')}
+                          disabled={registeredEvents.has('dhaka-night-ride')}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            registeredEvents.has('dhaka-night-ride')
+                              ? 'bg-green-500 text-white cursor-default'
+                              : 'bg-blue-500 hover:bg-blue-600 text-white'
+                          }`}
+                        >
+                          {registeredEvents.has('dhaka-night-ride') ? 'Registered' : "I'll Join"}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-emerald-500/20 to-green-500/20 backdrop-blur-sm rounded-2xl p-4 border border-emerald-400/30">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-2">
+                            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center mr-3">
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
+                              </svg>
+                            </div>
+                            <div>
+                              <h4 className="text-white font-bold text-lg">Safety Workshop</h4>
+                              <p className="text-emerald-300 text-sm">January 5, 2025 • 2:00 PM</p>
+                            </div>
+                          </div>
+                          <p className="text-gray-300 text-sm mb-2">Learn essential riding safety tips and techniques from professional instructors.</p>
+                          <div className="flex items-center space-x-4 text-xs">
+                            <span className="bg-emerald-500/30 text-emerald-300 px-2 py-1 rounded-full">📍 Club House</span>
+                            <span className="bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded-full">🎫 ৳500</span>
+                          </div>                        </div>                        <button 
+                          onClick={() => handleJoinEvent('safety-workshop', 'Safety Workshop')}
+                          disabled={registeredEvents.has('safety-workshop')}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            registeredEvents.has('safety-workshop')
+                              ? 'bg-green-500 text-white cursor-default'
+                              : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                          }`}
+                        >
+                          {registeredEvents.has('safety-workshop') ? 'Registered' : "I'll Join"}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 backdrop-blur-sm rounded-2xl p-4 border border-orange-400/30">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-2">
+                            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mr-3">
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <h4 className="text-white font-bold text-lg">Cox's Bazar Tour</h4>
+                              <p className="text-orange-300 text-sm">January 15-17, 2025</p>
+                            </div>
+                          </div>
+                          <p className="text-gray-300 text-sm mb-2">3-day adventure tour to Cox's Bazar. Accommodation and meals included.</p>
+                          <div className="flex items-center space-x-4 text-xs">
+                            <span className="bg-orange-500/30 text-orange-300 px-2 py-1 rounded-full">🏖️ Cox's Bazar</span>
+                            <span className="bg-red-500/30 text-red-300 px-2 py-1 rounded-full">🎫 ৳15,000</span>
+                          </div>                        </div>                        <button 
+                          onClick={() => handleJoinEvent('coxs-bazar-tour', "Cox's Bazar Tour")}
+                          disabled={registeredEvents.has('coxs-bazar-tour')}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            registeredEvents.has('coxs-bazar-tour')
+                              ? 'bg-green-500 text-white cursor-default'
+                              : 'bg-orange-500 hover:bg-orange-600 text-white'
+                          }`}
+                        >
+                          {registeredEvents.has('coxs-bazar-tour') ? 'Registered' : "I'll Join"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeEventTab === 'previous' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-white">Previous Events</h3>
+                    <div className="flex items-center space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                      <span className="text-gray-400 text-xs font-medium">5 Events Completed</span>
+                    </div>
+                  </div>
+                  
+                  {/* Sample Previous Events */}
+                  <div className="space-y-3">
+                    <div className="bg-gradient-to-r from-gray-500/20 to-slate-500/20 backdrop-blur-sm rounded-2xl p-4 border border-gray-400/30">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-2">
+                            <div className="w-10 h-10 bg-gradient-to-br from-gray-400 to-gray-600 rounded-xl flex items-center justify-center mr-3">
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <h4 className="text-white font-bold text-lg">Annual Club Meet 2024</h4>
+                              <p className="text-gray-300 text-sm">December 15, 2024 • Completed</p>
+                            </div>
+                          </div>
+                          <p className="text-gray-300 text-sm mb-2">Successful annual meetup with 150+ members. Great networking and fun activities.</p>
+                          <div className="flex items-center space-x-4 text-xs">
+                            <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">✅ 150 Attended</span>
+                            <span className="bg-blue-500/30 text-blue-300 px-2 py-1 rounded-full">📸 Photos Available</span>
+                          </div>
+                        </div>
+                        <button className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                          View Photos
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-purple-500/20 to-indigo-500/20 backdrop-blur-sm rounded-2xl p-4 border border-purple-400/30">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-2">
+                            <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-indigo-600 rounded-xl flex items-center justify-center mr-3">
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <h4 className="text-white font-bold text-lg">Chittagong Hill Ride</h4>
+                              <p className="text-purple-300 text-sm">November 28, 2024 • Completed</p>
+                            </div>
+                          </div>
+                          <p className="text-gray-300 text-sm mb-2">Amazing hill track adventure with scenic views and challenging routes.</p>
+                          <div className="flex items-center space-x-4 text-xs">
+                            <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">✅ 45 Riders</span>
+                            <span className="bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded-full">⭐ 4.8/5 Rating</span>
+                          </div>
+                        </div>
+                        <button className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                          View Details
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-teal-500/20 to-cyan-500/20 backdrop-blur-sm rounded-2xl p-4 border border-teal-400/30">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-2">
+                            <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-cyan-600 rounded-xl flex items-center justify-center mr-3">
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                              </svg>
+                            </div>
+                            <div>
+                              <h4 className="text-white font-bold text-lg">Maintenance Workshop</h4>
+                              <p className="text-teal-300 text-sm">October 20, 2024 • Completed</p>
+                            </div>
+                          </div>
+                          <p className="text-gray-300 text-sm mb-2">Hands-on motorcycle maintenance and repair workshop for all skill levels.</p>
+                          <div className="flex items-center space-x-4 text-xs">
+                            <span className="bg-green-500/30 text-green-300 px-2 py-1 rounded-full">✅ 80 Participants</span>
+                            <span className="bg-orange-500/30 text-orange-300 px-2 py-1 rounded-full">🔧 Practical Session</span>
+                          </div>
+                        </div>
+                        <button className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                          View Summary
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Special Offers Section */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3 px-2">
             <h3 className="text-xl font-bold text-white">All Benefits For Rider's Club Members</h3>
